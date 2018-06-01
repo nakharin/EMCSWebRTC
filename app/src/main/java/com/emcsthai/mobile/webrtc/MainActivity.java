@@ -206,8 +206,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initPeerConnections() {
-        localPeerConnection = createPeerConnection(peerConnectionFactory);
-//        remotePeerConnection = createPeerConnection(peerConnectionFactory, false);
+        localPeerConnection = createPeerConnection(peerConnectionFactory, true);
+        remotePeerConnection = createPeerConnection(peerConnectionFactory, false);
     }
 
     private void startStreamingVideo() {
@@ -221,22 +221,21 @@ public class MainActivity extends AppCompatActivity {
         localPeerConnection.createOffer(new CustomSdpObserver(TAG) {
             @Override
             public void onCreateSuccess(SessionDescription sessionDescription) {
-                Log.d(TAG, "onCreateSuccess: ");
                 localPeerConnection.setLocalDescription(new CustomSdpObserver(TAG), sessionDescription);
-//                remotePeerConnection.setRemoteDescription(new CustomSdpObserver(TAG), sessionDescription);
 
-//                remotePeerConnection.createAnswer(new CustomSdpObserver(TAG) {
-//                    @Override
-//                    public void onCreateSuccess(SessionDescription sessionDescription) {
-//                        localPeerConnection.setRemoteDescription(new CustomSdpObserver(TAG), sessionDescription);
-//                        remotePeerConnection.setLocalDescription(new CustomSdpObserver(TAG), sessionDescription);
-//                    }
-//                }, sdpMediaConstraints);
+                remotePeerConnection.setRemoteDescription(new CustomSdpObserver(TAG), sessionDescription);
+                remotePeerConnection.createAnswer(new CustomSdpObserver(TAG) {
+                    @Override
+                    public void onCreateSuccess(SessionDescription sessionDescription) {
+                        localPeerConnection.setRemoteDescription(new CustomSdpObserver(TAG), sessionDescription);
+                        remotePeerConnection.setLocalDescription(new CustomSdpObserver(TAG), sessionDescription);
+                    }
+                }, sdpMediaConstraints);
             }
         }, sdpMediaConstraints);
     }
 
-    private PeerConnection createPeerConnection(PeerConnectionFactory peerConnectionFactory) {
+    private PeerConnection createPeerConnection(PeerConnectionFactory peerConnectionFactory, boolean isLocal) {
         ArrayList<PeerConnection.IceServer> iceServers = new ArrayList<>();
         iceServers.add(PeerConnection.IceServer.builder("stun:23.21.150.121").createIceServer());
         iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
@@ -266,24 +265,11 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onIceCandidate(IceCandidate iceCandidate) {
-
-//                if (isLocal) {
-//                    remotePeerConnection.addIceCandidate(iceCandidate);
-//                } else {
+                if (isLocal) {
+                    remotePeerConnection.addIceCandidate(iceCandidate);
+                } else {
                 localPeerConnection.addIceCandidate(iceCandidate);
-//                }
-
-//                JSONObject message = new JSONObject();
-//                try {
-//                    message.put("type", "candidate");
-//                    message.put("label", iceCandidate.sdpMLineIndex);
-//                    message.put("id", iceCandidate.sdpMid);
-//                    message.put("candidate", iceCandidate.sdp);
-//                    // Method from this class
-//                    sendMessage(message);
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
+                }
             }
 
             @Override
