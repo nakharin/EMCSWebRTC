@@ -15,10 +15,9 @@ class CustomSdpObserver implements SdpObserver {
 
     private String tag;
 
-    CustomSdpObserver(String tag) {
-        this.tag = tag;
-//        tag = this.getClass().getCanonicalName();
-//        this.tag = this.tag + " " + logTag;
+    CustomSdpObserver(String logTag) {
+        tag = this.getClass().getCanonicalName();
+        this.tag = this.tag + " " + logTag;
     }
 
 

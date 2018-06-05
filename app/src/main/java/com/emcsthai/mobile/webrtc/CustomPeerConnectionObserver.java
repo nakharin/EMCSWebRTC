@@ -17,10 +17,9 @@ class CustomPeerConnectionObserver implements PeerConnection.Observer {
 
     private String tag;
 
-    CustomPeerConnectionObserver(String tag) {
-        this.tag = tag;
-//        this.tag = this.getClass().getCanonicalName();
-//        this.tag = this.tag + " " + tag;
+    CustomPeerConnectionObserver(String logTag) {
+        this.tag = this.getClass().getCanonicalName();
+        this.tag = this.tag + " " + logTag;
     }
 
     @Override

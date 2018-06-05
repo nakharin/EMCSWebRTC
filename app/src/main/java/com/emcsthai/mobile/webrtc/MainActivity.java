@@ -40,10 +40,14 @@ import org.webrtc.VideoTrack;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
+
+import static io.socket.client.Socket.EVENT_CONNECT;
+import static io.socket.client.Socket.EVENT_DISCONNECT;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,15 +57,14 @@ public class MainActivity extends AppCompatActivity {
     public static final int VIDEO_RESOLUTION_HEIGHT = 720;
     public static final int FPS = 30;
     public static final String VIDEO_TRACK_ID = "100";
-    public static final String AUDIO_TRACK_ID = "200";
+    public static final String AUDIO_TRACK_ID = "101";
 
     private Socket socket;
 
     private MediaConstraints pcConstraints = new MediaConstraints();
 
     private PeerConnectionFactory peerConnectionFactory;
-    private PeerConnection remotePeerConnection;
-    private PeerConnection localPeerConnection;
+    private PeerConnection peerConnection;
 
     private VideoTrack videoTrackFromCamera;
     private AudioTrack audioTrackFromCamera;
@@ -75,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
     private ImageView imgHangUp;
     private ImageView imgSwitchCamera;
     private ImageView imgMute;
+
+    private String id = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +106,8 @@ public class MainActivity extends AppCompatActivity {
                             initPeerConnections();
                             // Method from this class
                             startStreamingVideo();
+                            // Method from this class
+                            startRoom();
                         }
 
                         if (report.isAnyPermissionPermanentlyDenied()) {
@@ -122,6 +129,14 @@ public class MainActivity extends AppCompatActivity {
         imgMute.setOnClickListener(onClickListener);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (socket != null) {
+            socket.disconnect();
+        }
+    }
+
     private void initWidgets() {
         remoteSurfaceView = findViewById(R.id.remoteSurfaceView);
         localSurfaceView = findViewById(R.id.localSurfaceView);
@@ -136,23 +151,54 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             socket = IO.socket(webRTCUrl);
+
+            socket.on(EVENT_CONNECT, args -> {
+                Log.d(TAG, "connectToSignallingServer : connect");
+
+            }).on("id", args -> {
+                id = (String) args[0];
+                Log.i(TAG, "id : " + webRTCUrl + id);
+
+            }).on("message", args -> {
+                Log.i(TAG, "message : " + Arrays.toString(args));
+                JSONObject data = (JSONObject) args[0];
+                try {
+                    String from = data.getString("from");
+                    String type = data.getString("type");
+
+                    JSONObject payload = null;
+                    if (!type.equals("init")) {
+                        payload = data.getJSONObject("payload");
+                    }
+
+//                    if (from.equals(id)) {
+                        if (type.equals("init")) {
+                            createOfferPeerConnection(from);
+                        }
+
+                        if (type.equals("offer")) {
+                            createAnswerPeerConnection(from, payload);
+                        }
+
+                        if (type.equals("answer")) {
+                            SetRemoteSDPCommand(payload);
+                        }
+
+                        if (type.equals("candidate")) {
+                            AddIceCandidateCommand(payload);
+                        }
+//                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }).on(EVENT_DISCONNECT, args -> {
+                Log.d(TAG, "connectToSignallingServer: disconnect");
+            });
+            socket.connect();
         } catch (URISyntaxException e) {
             Log.e(TAG, "URISyntaxException : " + e.getMessage());
         }
-
-        socket.connect();
-
-        socket.on("id", args -> {
-            String id = (String) args[0];
-            Log.i(TAG, "id : " + webRTCUrl + id);
-        });
-
-        socket.on("name", args -> {
-            String name = args[0].toString();
-            Log.i(TAG, "name : " + name);
-        });
-
-        createRoom("Peet");
     }
 
     private void initSurfaceViews() {
@@ -166,7 +212,6 @@ public class MainActivity extends AppCompatActivity {
         localSurfaceView.setEnableHardwareScaler(true);
         localSurfaceView.setMirror(true);
     }
-
 
     private void initPeerConnectionFactory() {
         //Initialize PeerConnectionFactory globals.
@@ -205,37 +250,102 @@ public class MainActivity extends AppCompatActivity {
         audioTrackFromCamera.setEnabled(true);
     }
 
+    private void createOfferPeerConnection(String from) {
+        if (peerConnection != null) {
+            peerConnection.createOffer(new CustomSdpObserver("createOffer") {
+                @Override
+                public void onCreateSuccess(SessionDescription sessionDescription) {
+                    try {
+                        peerConnection.setLocalDescription(new CustomSdpObserver("setLocalDescription"), sessionDescription);
+                        JSONObject payload = new JSONObject();
+                        payload.put("type", sessionDescription.type.canonicalForm());
+                        payload.put("sdp", sessionDescription.description);
+                        emitMessage(from, sessionDescription.type.canonicalForm(), payload);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, pcConstraints);
+        } else {
+            Log.e(TAG, "createOfferPeerConnection == null");
+        }
+    }
+
+    private void createAnswerPeerConnection(String from, JSONObject payload) {
+        try {
+            String type = payload.getString("type");
+            String sdp = payload.getString("sdp");
+            SessionDescription sessionDescription = new SessionDescription(
+                    SessionDescription.Type.fromCanonicalForm(type), sdp);
+            peerConnection.setRemoteDescription(new CustomSdpObserver("setRemoteDescription"), sessionDescription);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (peerConnection != null) {
+            peerConnection.createAnswer(new CustomSdpObserver("createAnswer") {
+                @Override
+                public void onCreateSuccess(SessionDescription sessionDescription) {
+                    try {
+                        JSONObject payload = new JSONObject();
+                        payload.put("type", sessionDescription.type.canonicalForm());
+                        payload.put("sdp", sessionDescription.description);
+                        emitMessage(from, sessionDescription.type.canonicalForm(), payload);
+                        peerConnection.setLocalDescription(new CustomSdpObserver("setLocalDescription"), sessionDescription);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, pcConstraints);
+        } else {
+            Log.e(TAG, "createAnswerPeerConnection == null");
+        }
+    }
+
+    private void SetRemoteSDPCommand(JSONObject payload) {
+        try {
+            String type = payload.getString("type");
+            String sdp = payload.getString("sdp");
+            SessionDescription sessionDescription = new SessionDescription(
+                    SessionDescription.Type.fromCanonicalForm(type), sdp);
+            peerConnection.setRemoteDescription(new CustomSdpObserver("SetRemoteSDPCommand"), sessionDescription);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void AddIceCandidateCommand(JSONObject payload) {
+        try {
+            if (peerConnection != null) {
+                if (peerConnection.getRemoteDescription() != null) {
+                    IceCandidate candidate = new IceCandidate(
+                            payload.getString("id"),
+                            payload.getInt("label"),
+                            payload.getString("candidate")
+                    );
+                    peerConnection.addIceCandidate(candidate);
+                }
+            } else {
+                Log.e(TAG, "AddIceCandidateCommand == null");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void initPeerConnections() {
-        localPeerConnection = createPeerConnection(peerConnectionFactory, true);
-        remotePeerConnection = createPeerConnection(peerConnectionFactory, false);
+        peerConnection = createLocalPeerConnection(peerConnectionFactory);
     }
 
     private void startStreamingVideo() {
         MediaStream mediaStream = peerConnectionFactory.createLocalMediaStream("ARDAMS");
         mediaStream.addTrack(videoTrackFromCamera);
         mediaStream.addTrack(audioTrackFromCamera);
-        localPeerConnection.addStream(mediaStream);
-
-        MediaConstraints sdpMediaConstraints = new MediaConstraints();
-
-        localPeerConnection.createOffer(new CustomSdpObserver(TAG) {
-            @Override
-            public void onCreateSuccess(SessionDescription sessionDescription) {
-                localPeerConnection.setLocalDescription(new CustomSdpObserver(TAG), sessionDescription);
-
-                remotePeerConnection.setRemoteDescription(new CustomSdpObserver(TAG), sessionDescription);
-                remotePeerConnection.createAnswer(new CustomSdpObserver(TAG) {
-                    @Override
-                    public void onCreateSuccess(SessionDescription sessionDescription) {
-                        localPeerConnection.setRemoteDescription(new CustomSdpObserver(TAG), sessionDescription);
-                        remotePeerConnection.setLocalDescription(new CustomSdpObserver(TAG), sessionDescription);
-                    }
-                }, sdpMediaConstraints);
-            }
-        }, sdpMediaConstraints);
+        peerConnection.addStream(mediaStream);
     }
 
-    private PeerConnection createPeerConnection(PeerConnectionFactory peerConnectionFactory, boolean isLocal) {
+    private PeerConnection createLocalPeerConnection(PeerConnectionFactory
+                                                             peerConnectionFactory) {
         ArrayList<PeerConnection.IceServer> iceServers = new ArrayList<>();
         iceServers.add(PeerConnection.IceServer.builder("stun:23.21.150.121").createIceServer());
         iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
@@ -253,6 +363,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onIceConnectionChange(PeerConnection.IceConnectionState iceConnectionState) {
+                if (iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED) {
+                }
             }
 
             @Override
@@ -265,10 +377,15 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onIceCandidate(IceCandidate iceCandidate) {
-                if (isLocal) {
-                    remotePeerConnection.addIceCandidate(iceCandidate);
-                } else {
-                localPeerConnection.addIceCandidate(iceCandidate);
+                peerConnection.addIceCandidate(iceCandidate);
+                try {
+                    JSONObject payload = new JSONObject();
+                    payload.put("label", iceCandidate.sdpMLineIndex);
+                    payload.put("id", iceCandidate.sdpMid);
+                    payload.put("candidate", iceCandidate.sdp);
+                    emitMessage(id, "candidate", payload);
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
             }
 
@@ -278,9 +395,17 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onAddStream(MediaStream mediaStream) {
+                Log.d(TAG, "onAddStream " + mediaStream.label());
+
+                peerConnection.addStream(mediaStream);
+
                 VideoTrack remoteVideoTrack = mediaStream.videoTracks.get(0);
                 remoteVideoTrack.setEnabled(true);
                 remoteVideoTrack.addRenderer(new VideoRenderer(remoteSurfaceView));
+
+                AudioTrack remoteAudioTrack = mediaStream.audioTracks.get(0);
+                remoteAudioTrack.setEnabled(true);
+                remoteAudioTrack.setVolume(5);
             }
 
             @Override
@@ -346,16 +471,44 @@ public class MainActivity extends AppCompatActivity {
         return Camera2Enumerator.isSupported(this);
     }
 
+    private void startRoom() {
+        try {
+            emitMessage(id, "init", null);
+            createRoom("Room_" + id);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createRoom(String roomName) {
+        try {
+            JSONObject message = new JSONObject();
+            message.put("name", roomName);
+            socket.emit("readyToStream", message);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void emitMessage(String to, String type, JSONObject payload) throws JSONException {
+        JSONObject message = new JSONObject();
+        message.put("to", to);
+        message.put("type", type);
+        message.put("payload", payload);
+        socket.emit("message", message);
+        Log.i(TAG, "emitMessage : " + message);
+    }
+
+    /****************************************************************************
+     ******************************* Listener ***********************************
+     ****************************************************************************/
+
     private View.OnClickListener onClickListener = v -> {
         if (v == imgHangUp) {
             try {
-                if (localPeerConnection != null) {
-                    localPeerConnection.close();
-                    localPeerConnection = null;
-                }
-                if (remotePeerConnection != null) {
-                    remotePeerConnection.close();
-                    remotePeerConnection = null;
+                if (peerConnection != null) {
+                    peerConnection.close();
+                    peerConnection = null;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -373,33 +526,4 @@ public class MainActivity extends AppCompatActivity {
 
         }
     };
-
-    public void createRoom(String roomName) {
-        try {
-            JSONObject message = new JSONObject();
-            message.put("name", roomName);
-            socket.emit("readyToStream", message);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void emitMessage(String message) {
-        Log.d(TAG, "emitMessage() called with: message = [" + message + "]");
-        socket.emit("message", message);
-    }
-
-    private void emitSessionDescription(SessionDescription message) {
-        try {
-            Log.d(TAG, "emitMessage() called with: message = [" + message + "]");
-            JSONObject obj = new JSONObject();
-            obj.put("type", message.type.canonicalForm());
-            obj.put("sdp", message.description);
-            Log.d("emitMessage", obj.toString());
-            socket.emit("message", obj);
-            Log.d(TAG, obj.toString());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
 }
