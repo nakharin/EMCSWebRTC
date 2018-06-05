@@ -108,7 +108,7 @@ public class WebRTCClient {
         }
     }
 
-    public void onDestroy() {
+    public void close() {
 
         if (peerConnectionFactory != null) {
             peerConnectionFactory.dispose();
@@ -129,7 +129,7 @@ public class WebRTCClient {
             socket = IO.socket(BASE_URL);
 
             socket.on(EVENT_CONNECT, args -> {
-                Log.d(TAG, "connectToSignallingServer : connect");
+                Log.d(TAG, "initSocket : connect");
 
             }).on("id", args -> {
                 callId = (String) args[0];
@@ -170,13 +170,18 @@ public class WebRTCClient {
                     e.printStackTrace();
                 }
 
+            }).on("bye", args -> {
+                if (mOnWebRTCClientListener != null) {
+                    mOnWebRTCClientListener.onRemoteHangUp();
+                }
+
             }).on(EVENT_DISCONNECT, args -> {
-                Log.d(TAG, "connectToSignallingServer: disconnect");
+                Log.d(TAG, "initSocket : disconnect");
             });
             socket.connect();
         } catch (URISyntaxException e) {
             e.printStackTrace();
-            Log.e(TAG, "URISyntaxException : " + e.getMessage());
+            Log.e(TAG, "initSocket : URISyntaxException = " + e.getMessage());
         }
     }
 
@@ -459,7 +464,11 @@ public class WebRTCClient {
 
     public interface OnWebRTCClientListener {
         void onCallReady(String callId);
+
         void onLocalStream(MediaStream mediaStream);
+
         void onRemoteStream(MediaStream mediaStream);
+
+        void onRemoteHangUp();
     }
 }

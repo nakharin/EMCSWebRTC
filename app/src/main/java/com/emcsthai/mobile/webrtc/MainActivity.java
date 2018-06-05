@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        webRTCClient.onDestroy();
+        webRTCClient.close();
     }
 
     private void initWidgets() {
@@ -144,6 +144,11 @@ public class MainActivity extends AppCompatActivity {
             VideoRenderer videoRenderer = new VideoRenderer(remoteSurfaceView);
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             videoTrack.addRenderer(videoRenderer);
+        }
+
+        @Override
+        public void onRemoteHangUp() {
+            webRTCClient.hangUp();
         }
     };
 }
