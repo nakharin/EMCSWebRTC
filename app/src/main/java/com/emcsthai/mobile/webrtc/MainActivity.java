@@ -2,10 +2,12 @@ package com.emcsthai.mobile.webrtc;
 
 import android.Manifest;
 import android.os.Bundle;
-import android.os.Handler;
+import android.support.percent.PercentFrameLayout;
+import android.support.percent.PercentLayoutHelper;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.util.DisplayMetrics;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -31,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private EglBase rootEglBase;
 
     private FrameLayout rootLayout;
+    private ImageView imgScreenType;
 
     private SurfaceViewRenderer remoteSurfaceView;
     private SurfaceViewRenderer localSurfaceView;
@@ -78,11 +81,11 @@ public class MainActivity extends AppCompatActivity {
         }).onSameThread()
                 .check();
 
+        rootLayout.setOnClickListener(onClickListener);
+        imgScreenType.setOnClickListener(onClickListener);
         imgHangUp.setOnClickListener(onClickListener);
         imgSwitchCamera.setOnClickListener(onClickListener);
         imgMute.setOnClickListener(onClickListener);
-
-        rootLayout.setOnClickListener(onClickListener);
     }
 
     @Override
@@ -93,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initWidgets() {
         rootLayout = findViewById(R.id.rootLayout);
+        imgScreenType = findViewById(R.id.imgScreenType);
 
         remoteSurfaceView = findViewById(R.id.remoteSurfaceView);
         localSurfaceView = findViewById(R.id.localSurfaceView);
@@ -124,15 +128,76 @@ public class MainActivity extends AppCompatActivity {
         return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
-    private void updateLocalVideoViews() {
+    private void updateLocalSmallVideoView() {
         runOnUiThread(() -> {
-            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) localSurfaceView.getLayoutParams();
+
+            PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) localSurfaceView.getLayoutParams();
             params.height = dpToPx(220);
             params.width = dpToPx(150);
-            params.rightMargin = dpToPx(8);
-            params.bottomMargin = dpToPx(80);
+            params.rightMargin = 0;
+            params.bottomMargin = 0;
 
             localSurfaceView.setLayoutParams(params);
+
+            cardView.setVisibility(View.GONE);
+            isShow = false;
+
+            localSurfaceView.setOnTouchListener(onTouchListener);
+            remoteSurfaceView.setOnTouchListener(null);
+        });
+    }
+
+    private void updateRemoteSmallVideoView() {
+        runOnUiThread(() -> {
+
+            PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) remoteSurfaceView.getLayoutParams();
+            params.height = dpToPx(220);
+            params.width = dpToPx(150);
+            params.rightMargin = 8;
+            params.bottomMargin = 20;
+
+            remoteSurfaceView.setLayoutParams(params);
+
+            cardView.setVisibility(View.GONE);
+            isShow = false;
+
+            localSurfaceView.setOnTouchListener(null);
+            remoteSurfaceView.setOnTouchListener(onTouchListener);
+        });
+    }
+
+    private void updatePercentVideoView() {
+        runOnUiThread(() -> {
+
+            PercentFrameLayout.LayoutParams params1 = (PercentFrameLayout.LayoutParams) localSurfaceView.getLayoutParams();
+            params1.height = dpToPx(220);
+            params1.width = dpToPx(150);
+            params1.rightMargin = 0;
+            params1.bottomMargin = 0;
+
+            localSurfaceView.setLayoutParams(params1);
+
+
+            localSurfaceView.setOnTouchListener(null);
+            remoteSurfaceView.setOnTouchListener(null);
+
+            PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) remoteSurfaceView.getLayoutParams();
+            params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            remoteSurfaceView.setLayoutParams(params);
+            PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
+            info.heightPercent = 0.50f;
+            remoteSurfaceView.requestLayout();
+
+            params = (PercentFrameLayout.LayoutParams) localSurfaceView.getLayoutParams();
+            params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            params.rightMargin = 0;
+            params.bottomMargin = 0;
+            localSurfaceView.setLayoutParams(params);
+            info = params.getPercentLayoutInfo();
+            info.heightPercent = 0.50f;
+            localSurfaceView.requestLayout();
         });
     }
 
@@ -141,24 +206,31 @@ public class MainActivity extends AppCompatActivity {
      ****************************************************************************/
 
     boolean isMute = false;
-
     boolean isShow = false;
+    boolean isSmallToggle = false;
+
     private View.OnClickListener onClickListener = v -> {
 
         if (v == rootLayout) {
             if (!isShow) {
                 cardView.setVisibility(View.VISIBLE);
                 isShow = true;
-
-                new Handler().postDelayed(() -> {
-                    cardView.setVisibility(View.GONE);
-                    isShow = false;
-                }, 3000);
-
             } else {
                 cardView.setVisibility(View.GONE);
                 isShow = false;
             }
+        }
+
+        if (v == imgScreenType) {
+//            if (!isSmallToggle) {
+//                updateRemoteSmallVideoView();
+//                isSmallToggle = true;
+//            } else {
+//                updateLocalSmallVideoView();
+//                isSmallToggle = false;
+//            }
+
+            updatePercentVideoView();
         }
 
         if (v == imgHangUp) {
@@ -180,7 +252,36 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private float dX, dY;
+
+    private View.OnTouchListener onTouchListener = new View.OnTouchListener() {
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_DOWN:
+                    dX = localSurfaceView.getX() - event.getRawX();
+                    dY = localSurfaceView.getY() - event.getRawY();
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    float x = event.getRawX() + dX;
+                    float y = event.getRawY() + dY;
+                    v.animate()
+                            .x(x)
+                            .y(y)
+                            .setDuration(0)
+                            .start();
+                    break;
+                default:
+                    return false;
+            }
+            return true;
+        }
+    };
+
     private WebRTCClient.OnWebRTCClientListener onWebRTCClientListener = new WebRTCClient.OnWebRTCClientListener() {
+
         @Override
         public void onCallReady(String callId) {
         }
@@ -190,6 +291,9 @@ public class MainActivity extends AppCompatActivity {
             VideoRenderer videoRenderer = new VideoRenderer(localSurfaceView);
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             videoTrack.addRenderer(videoRenderer);
+
+            // Method from this class
+            updateLocalSmallVideoView();
         }
 
         @Override
@@ -197,9 +301,6 @@ public class MainActivity extends AppCompatActivity {
             VideoRenderer videoRenderer = new VideoRenderer(remoteSurfaceView);
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             videoTrack.addRenderer(videoRenderer);
-
-            // Method from this class
-            updateLocalVideoViews();
         }
 
         @Override
