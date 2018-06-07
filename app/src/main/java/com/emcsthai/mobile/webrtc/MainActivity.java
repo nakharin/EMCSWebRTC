@@ -3,7 +3,9 @@ package com.emcsthai.mobile.webrtc;
 import android.Manifest;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -81,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initWidgets() {
+
         remoteSurfaceView = findViewById(R.id.remoteSurfaceView);
         localSurfaceView = findViewById(R.id.localSurfaceView);
 
@@ -101,6 +104,26 @@ public class MainActivity extends AppCompatActivity {
         localSurfaceView.setMirror(true);
     }
 
+    /**
+     * Util Methods
+     */
+    public int dpToPx(int dp) {
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
+    }
+
+    private void updateLocalVideoViews() {
+        runOnUiThread(() -> {
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) localSurfaceView.getLayoutParams();
+            params.height = dpToPx(220);
+            params.width = dpToPx(150);
+            params.rightMargin = dpToPx(8);
+            params.bottomMargin = dpToPx(80);
+
+            localSurfaceView.setLayoutParams(params);
+        });
+    }
+
     /****************************************************************************
      ******************************* Listener ***********************************
      ****************************************************************************/
@@ -110,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
     private View.OnClickListener onClickListener = v -> {
         if (v == imgHangUp) {
             webRTCClient.hangUp();
+
         }
 
         if (v == imgSwitchCamera) {
@@ -144,6 +168,9 @@ public class MainActivity extends AppCompatActivity {
             VideoRenderer videoRenderer = new VideoRenderer(remoteSurfaceView);
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             videoTrack.addRenderer(videoRenderer);
+
+            // Method from this class
+            updateLocalVideoViews();
         }
 
         @Override
