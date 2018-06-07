@@ -2,10 +2,13 @@ package com.emcsthai.mobile.webrtc;
 
 import android.Manifest;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -27,8 +30,12 @@ public class MainActivity extends AppCompatActivity {
 
     private EglBase rootEglBase;
 
+    private FrameLayout rootLayout;
+
     private SurfaceViewRenderer remoteSurfaceView;
     private SurfaceViewRenderer localSurfaceView;
+
+    private CardView cardView;
 
     private ImageView imgHangUp;
     private ImageView imgSwitchCamera;
@@ -74,6 +81,8 @@ public class MainActivity extends AppCompatActivity {
         imgHangUp.setOnClickListener(onClickListener);
         imgSwitchCamera.setOnClickListener(onClickListener);
         imgMute.setOnClickListener(onClickListener);
+
+        rootLayout.setOnClickListener(onClickListener);
     }
 
     @Override
@@ -83,9 +92,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initWidgets() {
+        rootLayout = findViewById(R.id.rootLayout);
 
         remoteSurfaceView = findViewById(R.id.remoteSurfaceView);
         localSurfaceView = findViewById(R.id.localSurfaceView);
+
+        cardView = findViewById(R.id.cardView);
 
         imgHangUp = findViewById(R.id.imgHangUp);
         imgSwitchCamera = findViewById(R.id.imgSwitchCamera);
@@ -130,10 +142,27 @@ public class MainActivity extends AppCompatActivity {
 
     boolean isMute = false;
 
+    boolean isShow = false;
     private View.OnClickListener onClickListener = v -> {
+
+        if (v == rootLayout) {
+            if (!isShow) {
+                cardView.setVisibility(View.VISIBLE);
+                isShow = true;
+
+                new Handler().postDelayed(() -> {
+                    cardView.setVisibility(View.GONE);
+                    isShow = false;
+                }, 3000);
+
+            } else {
+                cardView.setVisibility(View.GONE);
+                isShow = false;
+            }
+        }
+
         if (v == imgHangUp) {
             webRTCClient.hangUp();
-
         }
 
         if (v == imgSwitchCamera) {
