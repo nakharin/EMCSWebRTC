@@ -13,15 +13,16 @@
         android:layout_height="match_parent">
 
         <org.webrtc.SurfaceViewRenderer
+            android:id="@+id/remoteSurfaceView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:focusable="true" />
+
+        <org.webrtc.SurfaceViewRenderer
             android:id="@+id/localSurfaceView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="bottom|end"/>
-
-        <org.webrtc.SurfaceViewRenderer
-            android:id="@+id/remoteSurfaceView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:focusable="true" />
 
     </android.support.percent.PercentFrameLayout>
 
@@ -30,9 +31,9 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_gravity="top|end"
+        android:layout_margin="16dp"
         android:scaleType="centerInside"
-        android:src="@mipmap/ic_screen_type"
-        android:layout_margin="16dp"/>
+        android:src="@mipmap/ic_screen_type" />
 
     <android.support.v7.widget.CardView
         android:id="@+id/cardView"

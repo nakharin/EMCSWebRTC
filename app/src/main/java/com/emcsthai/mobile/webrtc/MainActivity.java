@@ -6,10 +6,9 @@ import android.support.percent.PercentFrameLayout;
 import android.support.percent.PercentLayoutHelper;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
-import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -120,117 +119,145 @@ public class MainActivity extends AppCompatActivity {
         localSurfaceView.setMirror(true);
     }
 
-    /**
-     * Util Methods
-     */
-    public int dpToPx(int dp) {
-        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
+    private void updateResetVideoView() {
+        runOnUiThread(() -> {
+            PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) remoteSurfaceView.getLayoutParams();
+            params.gravity = -1;
+            PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
+            info.heightPercent = 1.00f;
+            info.widthPercent = 1.00f;
+            info.leftMarginPercent = 0.00f;
+            info.topMarginPercent = 0.00f;
+            remoteSurfaceView.requestLayout();
+
+            params = (PercentFrameLayout.LayoutParams) localSurfaceView.getLayoutParams();
+            params.gravity = -1;
+            info = params.getPercentLayoutInfo();
+            info.heightPercent = 1.00f;
+            info.widthPercent = 1.00f;
+            info.leftMarginPercent = 0.00f;
+            info.topMarginPercent = 0.00f;
+            localSurfaceView.requestLayout();
+        });
     }
 
     private void updateLocalSmallVideoView() {
+        // Method from this class
+        updateResetVideoView();
         runOnUiThread(() -> {
-
             PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) localSurfaceView.getLayoutParams();
-            params.height = dpToPx(220);
-            params.width = dpToPx(150);
-            params.rightMargin = 0;
-            params.bottomMargin = 0;
+            PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
+            info.heightPercent = 0.30f;
+            info.widthPercent = 0.35f;
+            info.leftMarginPercent = 0.60f;
+            info.topMarginPercent = 0.65f;
+            localSurfaceView.requestLayout();
+            localSurfaceView.findFocus();
 
-            localSurfaceView.setLayoutParams(params);
-
-            cardView.setVisibility(View.GONE);
-            isShow = false;
-
-            localSurfaceView.setOnTouchListener(onTouchListener);
-            remoteSurfaceView.setOnTouchListener(null);
+            windowType = WINDOW_TYPE.LOCAL_SMALL;
         });
     }
 
     private void updateRemoteSmallVideoView() {
+        // Method from this class
+        updateResetVideoView();
         runOnUiThread(() -> {
-
             PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) remoteSurfaceView.getLayoutParams();
-            params.height = dpToPx(220);
-            params.width = dpToPx(150);
-            params.rightMargin = 8;
-            params.bottomMargin = 20;
+            PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
+            info.heightPercent = 0.30f;
+            info.widthPercent = 0.35f;
+            info.leftMarginPercent = 0.60f;
+            info.topMarginPercent = 0.65f;
+            remoteSurfaceView.requestLayout();
+            remoteSurfaceView.findFocus();
 
-            remoteSurfaceView.setLayoutParams(params);
-
-            cardView.setVisibility(View.GONE);
-            isShow = false;
-
-            localSurfaceView.setOnTouchListener(null);
-            remoteSurfaceView.setOnTouchListener(onTouchListener);
+            windowType = WINDOW_TYPE.REMOTE_SMALL;
         });
     }
 
-    private void updatePercentVideoView() {
+    private void updateSplitHalfVideoView() {
+        // Method from this class
+        updateResetVideoView();
         runOnUiThread(() -> {
-
-            PercentFrameLayout.LayoutParams params1 = (PercentFrameLayout.LayoutParams) localSurfaceView.getLayoutParams();
-            params1.height = dpToPx(220);
-            params1.width = dpToPx(150);
-            params1.rightMargin = 0;
-            params1.bottomMargin = 0;
-
-            localSurfaceView.setLayoutParams(params1);
-
-
-            localSurfaceView.setOnTouchListener(null);
-            remoteSurfaceView.setOnTouchListener(null);
-
             PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) remoteSurfaceView.getLayoutParams();
-            params.height = ViewGroup.LayoutParams.MATCH_PARENT;
-            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
-            remoteSurfaceView.setLayoutParams(params);
             PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
             info.heightPercent = 0.50f;
+            info.widthPercent = 1.00f;
+            info.leftMarginPercent = 0.00f;
+            info.topMarginPercent = 0.00f;
             remoteSurfaceView.requestLayout();
 
             params = (PercentFrameLayout.LayoutParams) localSurfaceView.getLayoutParams();
-            params.height = ViewGroup.LayoutParams.MATCH_PARENT;
-            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
-            params.rightMargin = 0;
-            params.bottomMargin = 0;
-            localSurfaceView.setLayoutParams(params);
+            params.gravity = Gravity.BOTTOM;
             info = params.getPercentLayoutInfo();
             info.heightPercent = 0.50f;
+            info.widthPercent = 1.00f;
+            info.leftMarginPercent = 0.00f;
+            info.topMarginPercent = 0.00f;
             localSurfaceView.requestLayout();
+
+            windowType = WINDOW_TYPE.SPLIT_HALF;
         });
+    }
+
+    private void updateMoveToBottomVideoView(SurfaceViewRenderer selectSurfaceView) {
+        PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) selectSurfaceView.getLayoutParams();
+        PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
+        info.heightPercent = 0.30f;
+        info.widthPercent = 0.35f;
+        info.leftMarginPercent = 0.60f;
+        info.topMarginPercent = 0.65f;
+        selectSurfaceView.requestLayout();
+    }
+
+    private void updateMoveToTopVideoView(SurfaceViewRenderer selectSurfaceView) {
+        PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) selectSurfaceView.getLayoutParams();
+        PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
+        info.heightPercent = 0.30f;
+        info.widthPercent = 0.35f;
+        info.leftMarginPercent = 0.60f;
+        info.topMarginPercent = 0.55f;
+        selectSurfaceView.requestLayout();
     }
 
     /****************************************************************************
      ******************************* Listener ***********************************
      ****************************************************************************/
 
-    boolean isMute = false;
-    boolean isShow = false;
-    boolean isSmallToggle = false;
+    private boolean isMute = false;
+    private boolean isShow = false;
+    private WINDOW_TYPE windowType = WINDOW_TYPE.LOCAL_SMALL;
+
+    private enum WINDOW_TYPE {
+        LOCAL_SMALL, REMOTE_SMALL, SPLIT_HALF
+    }
 
     private View.OnClickListener onClickListener = v -> {
 
         if (v == rootLayout) {
             if (!isShow) {
                 cardView.setVisibility(View.VISIBLE);
+//                updateMoveToTopVideoView(localSurfaceView);
                 isShow = true;
             } else {
                 cardView.setVisibility(View.GONE);
+//                updateMoveToBottomVideoView(localSurfaceView);
                 isShow = false;
             }
         }
 
         if (v == imgScreenType) {
-//            if (!isSmallToggle) {
-//                updateRemoteSmallVideoView();
-//                isSmallToggle = true;
-//            } else {
-//                updateLocalSmallVideoView();
-//                isSmallToggle = false;
-//            }
-
-            updatePercentVideoView();
+            switch (windowType) {
+                case LOCAL_SMALL:
+                    updateRemoteSmallVideoView();
+                    break;
+                case REMOTE_SMALL:
+                    updateSplitHalfVideoView();
+                    break;
+                case SPLIT_HALF:
+                    updateLocalSmallVideoView();
+                    break;
+            }
         }
 
         if (v == imgHangUp) {
@@ -291,9 +318,6 @@ public class MainActivity extends AppCompatActivity {
             VideoRenderer videoRenderer = new VideoRenderer(localSurfaceView);
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             videoTrack.addRenderer(videoRenderer);
-
-            // Method from this class
-            updateLocalSmallVideoView();
         }
 
         @Override
@@ -301,6 +325,9 @@ public class MainActivity extends AppCompatActivity {
             VideoRenderer videoRenderer = new VideoRenderer(remoteSurfaceView);
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             videoTrack.addRenderer(videoRenderer);
+
+            // Method from this class
+            updateLocalSmallVideoView();
         }
 
         @Override
