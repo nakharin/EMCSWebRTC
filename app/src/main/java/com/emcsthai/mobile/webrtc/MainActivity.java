@@ -6,11 +6,11 @@ import android.support.percent.PercentFrameLayout;
 import android.support.percent.PercentLayoutHelper;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
+import android.util.Log;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.karumi.dexter.Dexter;
@@ -31,8 +31,10 @@ public class MainActivity extends AppCompatActivity {
 
     private EglBase rootEglBase;
 
-    private FrameLayout rootLayout;
+    private RelativeLayout rootLayout;
     private ImageView imgScreenType;
+
+    private PercentFrameLayout percentLayout;
 
     private SurfaceViewRenderer remoteSurfaceView;
     private SurfaceViewRenderer localSurfaceView;
@@ -97,6 +99,8 @@ public class MainActivity extends AppCompatActivity {
         rootLayout = findViewById(R.id.rootLayout);
         imgScreenType = findViewById(R.id.imgScreenType);
 
+        percentLayout = findViewById(R.id.percentLayout);
+
         remoteSurfaceView = findViewById(R.id.remoteSurfaceView);
         localSurfaceView = findViewById(R.id.localSurfaceView);
 
@@ -152,7 +156,13 @@ public class MainActivity extends AppCompatActivity {
             info.leftMarginPercent = 0.60f;
             info.topMarginPercent = 0.65f;
             localSurfaceView.requestLayout();
-            localSurfaceView.findFocus();
+
+            localSurfaceView.requestFocus();
+            localSurfaceView.invalidate();
+            remoteSurfaceView.invalidate();
+            remoteSurfaceView.requestLayout();
+            localSurfaceView.requestLayout();
+
 
             windowType = WINDOW_TYPE.LOCAL_SMALL;
         });
@@ -169,7 +179,12 @@ public class MainActivity extends AppCompatActivity {
             info.leftMarginPercent = 0.60f;
             info.topMarginPercent = 0.65f;
             remoteSurfaceView.requestLayout();
-            remoteSurfaceView.findFocus();
+
+            remoteSurfaceView.requestFocus();
+            localSurfaceView.invalidate();
+            remoteSurfaceView.invalidate();
+            remoteSurfaceView.requestLayout();
+            localSurfaceView.requestLayout();
 
             windowType = WINDOW_TYPE.REMOTE_SMALL;
         });
@@ -200,32 +215,32 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void updateMoveToBottomVideoView(SurfaceViewRenderer selectSurfaceView) {
-        PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) selectSurfaceView.getLayoutParams();
-        PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
-        info.heightPercent = 0.30f;
-        info.widthPercent = 0.35f;
-        info.leftMarginPercent = 0.60f;
-        info.topMarginPercent = 0.65f;
-        selectSurfaceView.requestLayout();
-    }
-
-    private void updateMoveToTopVideoView(SurfaceViewRenderer selectSurfaceView) {
-        PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) selectSurfaceView.getLayoutParams();
-        PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
-        info.heightPercent = 0.30f;
-        info.widthPercent = 0.35f;
-        info.leftMarginPercent = 0.60f;
-        info.topMarginPercent = 0.55f;
-        selectSurfaceView.requestLayout();
-    }
+//    private void updateMoveToBottomVideoView(SurfaceViewRenderer selectSurfaceView) {
+//        PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) selectSurfaceView.getLayoutParams();
+//        PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
+//        info.heightPercent = 0.30f;
+//        info.widthPercent = 0.35f;
+//        info.leftMarginPercent = 0.60f;
+//        info.topMarginPercent = 0.65f;
+//        selectSurfaceView.requestLayout();
+//    }
+//
+//    private void updateMoveToTopVideoView(SurfaceViewRenderer selectSurfaceView) {
+//        PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) selectSurfaceView.getLayoutParams();
+//        PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
+//        info.heightPercent = 0.30f;
+//        info.widthPercent = 0.35f;
+//        info.leftMarginPercent = 0.60f;
+//        info.topMarginPercent = 0.55f;
+//        selectSurfaceView.requestLayout();
+//    }
 
     /****************************************************************************
      ******************************* Listener ***********************************
      ****************************************************************************/
 
     private boolean isMute = false;
-    private boolean isShow = false;
+    private boolean isShow = true;
     private WINDOW_TYPE windowType = WINDOW_TYPE.LOCAL_SMALL;
 
     private enum WINDOW_TYPE {
@@ -237,10 +252,12 @@ public class MainActivity extends AppCompatActivity {
         if (v == rootLayout) {
             if (!isShow) {
                 cardView.setVisibility(View.VISIBLE);
+                imgScreenType.setVisibility(View.VISIBLE);
 //                updateMoveToTopVideoView(localSurfaceView);
                 isShow = true;
             } else {
                 cardView.setVisibility(View.GONE);
+                imgScreenType.setVisibility(View.GONE);
 //                updateMoveToBottomVideoView(localSurfaceView);
                 isShow = false;
             }
@@ -279,33 +296,33 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private float dX, dY;
-
-    private View.OnTouchListener onTouchListener = new View.OnTouchListener() {
-
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                case MotionEvent.ACTION_DOWN:
-                    dX = localSurfaceView.getX() - event.getRawX();
-                    dY = localSurfaceView.getY() - event.getRawY();
-                    break;
-
-                case MotionEvent.ACTION_MOVE:
-                    float x = event.getRawX() + dX;
-                    float y = event.getRawY() + dY;
-                    v.animate()
-                            .x(x)
-                            .y(y)
-                            .setDuration(0)
-                            .start();
-                    break;
-                default:
-                    return false;
-            }
-            return true;
-        }
-    };
+//    private float dX, dY;
+//
+//    private View.OnTouchListener onTouchListener = new View.OnTouchListener() {
+//
+//        @Override
+//        public boolean onTouch(View v, MotionEvent event) {
+//            switch (event.getAction() & MotionEvent.ACTION_MASK) {
+//                case MotionEvent.ACTION_DOWN:
+//                    dX = localSurfaceView.getX() - event.getRawX();
+//                    dY = localSurfaceView.getY() - event.getRawY();
+//                    break;
+//
+//                case MotionEvent.ACTION_MOVE:
+//                    float x = event.getRawX() + dX;
+//                    float y = event.getRawY() + dY;
+//                    v.animate()
+//                            .x(x)
+//                            .y(y)
+//                            .setDuration(0)
+//                            .start();
+//                    break;
+//                default:
+//                    return false;
+//            }
+//            return true;
+//        }
+//    };
 
     private WebRTCClient.OnWebRTCClientListener onWebRTCClientListener = new WebRTCClient.OnWebRTCClientListener() {
 
@@ -315,6 +332,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onLocalStream(MediaStream mediaStream) {
+            Log.i("555", "onLocalStream");
             VideoRenderer videoRenderer = new VideoRenderer(localSurfaceView);
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             videoTrack.addRenderer(videoRenderer);
@@ -322,6 +340,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onRemoteStream(MediaStream mediaStream) {
+            Log.d("555", "onRemoteStream");
             VideoRenderer videoRenderer = new VideoRenderer(remoteSurfaceView);
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             videoTrack.addRenderer(videoRenderer);

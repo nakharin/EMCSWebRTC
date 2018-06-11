@@ -124,6 +124,10 @@ public class WebRTCClient {
         }
     }
 
+    public PeerConnectionFactory getPeerConnectionFactory() {
+        return peerConnectionFactory;
+    }
+
     private void initSocket() {
         try {
             socket = IO.socket(BASE_URL);
