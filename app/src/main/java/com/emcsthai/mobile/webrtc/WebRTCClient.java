@@ -41,7 +41,7 @@ public class WebRTCClient {
 
     private final static String TAG = WebRTCClient.class.getCanonicalName();
 
-    private String BASE_URL = "http://10.2.2.82:3000/";
+    private String BASE_URL = "http://10.2.2.82:3060/";
 
     private static final int VIDEO_RESOLUTION_WIDTH = 1280;
     private static final int VIDEO_RESOLUTION_HEIGHT = 720;
@@ -144,9 +144,12 @@ public class WebRTCClient {
 
             }).on(EVENT_MESSAGE, args -> {
                 Log.i(TAG, "message : " + Arrays.toString(args));
-                JSONObject data = (JSONObject) args[0];
                 try {
-                    String from = data.getString("from");
+
+                    JSONObject data = (JSONObject) args[0];
+
+//                        String from = data.getString("from");
+                    String from = "";
                     String type = data.getString("type");
 
                     JSONObject payload = null;
@@ -170,9 +173,12 @@ public class WebRTCClient {
                         AddIceCandidateCommand(payload);
                     }
 
-                } catch (JSONException e) {
+                } catch (JSONException | ClassCastException e) {
                     e.printStackTrace();
                 }
+
+            }).on("full", args -> {
+                Log.d(TAG, "full room : " + args[0]);
 
             }).on("bye", args -> {
                 if (mOnWebRTCClientListener != null) {
@@ -219,7 +225,7 @@ public class WebRTCClient {
 
         AudioSource audioSource = peerConnectionFactory.createAudioSource(mediaConstraints);
         localAudioTrack = peerConnectionFactory.createAudioTrack(AUDIO_TRACK_ID, audioSource);
-        localAudioTrack.setVolume(10f);
+        localAudioTrack.setVolume(50f);
         localAudioTrack.setEnabled(true);
 
         localVideoTrack = peerConnectionFactory.createVideoTrack(VIDEO_TRACK_ID, videoSource);
@@ -445,10 +451,10 @@ public class WebRTCClient {
 
     private void createRoom(String roomName) {
         try {
+            socket.emit("join", "emcs");
             emitMessage(callId, "init", null);
-            JSONObject message = new JSONObject();
-            message.put("name", roomName);
-            socket.emit("readyToStream", message);
+//            JSONObject message = new JSONObject();
+//            message.put("name", roomName);
         } catch (JSONException e) {
             e.printStackTrace();
         }
