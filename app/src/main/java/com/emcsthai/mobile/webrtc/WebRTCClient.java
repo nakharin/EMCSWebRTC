@@ -30,6 +30,7 @@ import org.webrtc.VideoTrack;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -294,6 +295,7 @@ public class WebRTCClient {
 
             @Override
             public void onAddStream(MediaStream mediaStream) {
+                mediaStream.audioTracks.get(0).setVolume(10);
                 peerConnection.addStream(mediaStream);
                 if (mOnWebRTCClientListener != null) {
                     mOnWebRTCClientListener.onRemoteStream(mediaStream);
