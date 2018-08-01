@@ -29,6 +29,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final static String TAG = MainActivity.class.getCanonicalName();
+
     private EglBase rootEglBase;
 
     private RelativeLayout rootLayout;
@@ -332,7 +334,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onLocalStream(MediaStream mediaStream) {
-            Log.i("555", "onLocalStream");
+            Log.i(TAG, "onLocalStream");
             VideoRenderer videoRenderer = new VideoRenderer(localSurfaceView);
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             videoTrack.addRenderer(videoRenderer);
@@ -340,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onRemoteStream(MediaStream mediaStream) {
-            Log.d("555", "onRemoteStream");
+            Log.d(TAG, "onRemoteStream");
             VideoRenderer videoRenderer = new VideoRenderer(remoteSurfaceView);
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             videoTrack.addRenderer(videoRenderer);

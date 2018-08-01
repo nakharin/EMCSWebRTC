@@ -23,22 +23,22 @@ class CustomSdpObserver implements SdpObserver {
 
     @Override
     public void onCreateSuccess(SessionDescription sessionDescription) {
-        Log.d(tag, "onCreateSuccess() called with: sessionDescription = [" + sessionDescription + "]");
+        Log.i(tag, "onCreateSuccess() called with: sessionDescription = [" + sessionDescription + "]");
     }
 
     @Override
     public void onSetSuccess() {
-        Log.d(tag, "onSetSuccess() called");
+        Log.i(tag, "onSetSuccess() called");
     }
 
     @Override
     public void onCreateFailure(String s) {
-        Log.d(tag, "onCreateFailure() called with: s = [" + s + "]");
+        Log.e(tag, "onCreateFailure() called with: s = [" + s + "]");
     }
 
     @Override
     public void onSetFailure(String s) {
-        Log.d(tag, "onSetFailure() called with: s = [" + s + "]");
+        Log.e(tag, "onSetFailure() called with: s = [" + s + "]");
     }
 
 }

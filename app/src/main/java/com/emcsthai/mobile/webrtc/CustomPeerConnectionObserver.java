@@ -49,7 +49,7 @@ class CustomPeerConnectionObserver implements PeerConnection.Observer {
 
     @Override
     public void onIceCandidatesRemoved(IceCandidate[] iceCandidates) {
-        Log.d(tag, "onIceCandidatesRemoved() called with: iceCandidates = [" + iceCandidates + "]");
+        Log.e(tag, "onIceCandidatesRemoved() called with: iceCandidates = [" + iceCandidates + "]");
     }
 
     @Override
@@ -59,7 +59,7 @@ class CustomPeerConnectionObserver implements PeerConnection.Observer {
 
     @Override
     public void onRemoveStream(MediaStream mediaStream) {
-        Log.d(tag, "onRemoveStream() called with: mediaStream = [" + mediaStream + "]");
+        Log.e(tag, "onRemoveStream() called with: mediaStream = [" + mediaStream + "]");
     }
 
     @Override
