@@ -19,6 +19,7 @@ import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 
+import org.webrtc.AudioTrack;
 import org.webrtc.EglBase;
 import org.webrtc.MediaStream;
 import org.webrtc.SurfaceViewRenderer;
@@ -344,6 +345,10 @@ public class MainActivity extends AppCompatActivity {
         public void onRemoteStream(MediaStream mediaStream) {
             Log.d(TAG, "onRemoteStream");
             VideoRenderer videoRenderer = new VideoRenderer(remoteSurfaceView);
+
+            AudioTrack audioTrack = mediaStream.audioTracks.get(0);
+            audioTrack.setVolume(10);
+
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             videoTrack.addRenderer(videoRenderer);
 
