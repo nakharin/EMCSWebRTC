@@ -1,6 +1,7 @@
 package com.emcsthai.mobile.webrtc;
 
 import android.content.Context;
+import android.media.AudioManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -235,7 +236,6 @@ public class WebRTCClient {
 
         AudioSource audioSource = peerConnectionFactory.createAudioSource(mediaConstraints);
         localAudioTrack = peerConnectionFactory.createAudioTrack(AUDIO_TRACK_ID, audioSource);
-//        localAudioTrack.setVolume(50f);
         localAudioTrack.setEnabled(true);
 
         localVideoTrack = peerConnectionFactory.createVideoTrack(VIDEO_TRACK_ID, videoSource);
