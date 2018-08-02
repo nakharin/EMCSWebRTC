@@ -99,30 +99,16 @@ public class VideoCallActivity extends AppCompatActivity {
         imgMute.setOnClickListener(onClickListener);
     }
 
-//    @Override
-//    protected void onDestroy() {
-//
-//        Toast.makeText(this, "onDestroy", Toast.LENGTH_SHORT).show();
-//
-//        webRTCClient.hangUp();
-//
-//        if (localSurfaceView != null) {
-//            localSurfaceView.release();
-//            localSurfaceView = null;
-//        }
-//
-//        if (remoteSurfaceView != null) {
-//            remoteSurfaceView.release();
-//            remoteSurfaceView = null;
-//        }
-//
-//        if (rootEglBase != null) {
-//            rootEglBase.release();
-//            rootEglBase = null;
-//        }
-//
-//        super.onDestroy();
-//    }
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        handUp();
+    }
 
     private void initWidgets() {
         rootLayout = findViewById(R.id.rootLayout);
@@ -264,6 +250,32 @@ public class VideoCallActivity extends AppCompatActivity {
 //        selectSurfaceView.requestLayout();
 //    }
 
+    private void handUp() {
+        if (localSurfaceView != null) {
+            localSurfaceView.release();
+            localSurfaceView = null;
+        }
+
+        if (remoteSurfaceView != null) {
+            remoteSurfaceView.release();
+            remoteSurfaceView = null;
+        }
+
+        if (rootEglBase != null) {
+            rootEglBase.release();
+            rootEglBase = null;
+        }
+
+        if (webRTCClient != null) {
+            webRTCClient.disconnect();
+            webRTCClient = null;
+        }
+
+        Toast.makeText(this, "Local HangUp", Toast.LENGTH_SHORT).show();
+
+        finish();
+    }
+
     /****************************************************************************
      ******************************* Listener ***********************************
      ****************************************************************************/
@@ -307,31 +319,7 @@ public class VideoCallActivity extends AppCompatActivity {
         }
 
         if (v == imgHangUp) {
-
-            if (localSurfaceView != null) {
-                localSurfaceView.release();
-                localSurfaceView = null;
-            }
-
-            if (remoteSurfaceView != null) {
-                remoteSurfaceView.release();
-                remoteSurfaceView = null;
-            }
-
-            if (rootEglBase != null) {
-                rootEglBase.release();
-                rootEglBase = null;
-            }
-
-            if (webRTCClient != null) {
-                webRTCClient.disconnect();
-                webRTCClient = null;
-            }
-
-            runOnUiThread(() -> {
-                Toast.makeText(this, "Local HangUp", Toast.LENGTH_SHORT).show();
-                finish();
-            });
+            handUp();
         }
 
         if (v == imgSwitchCamera) {

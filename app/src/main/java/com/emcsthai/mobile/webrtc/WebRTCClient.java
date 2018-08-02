@@ -52,18 +52,18 @@ public class WebRTCClient {
     private Context mContext;
     private EglBase mEglBase;
 
-    private VideoTrack localVideoTrack;
-    private AudioTrack localAudioTrack;
-    private VideoCapturer videoCapturer;
+    private VideoTrack mLocalVideoTrack;
+    private AudioTrack mLocalAudioTrack;
+    private VideoCapturer mVideoCapturer;
 
     private OnWebRTCClientListener mOnWebRTCClientListener;
 
-    private Socket socket;
+    private Socket mSocket;
 
-    private MediaConstraints mediaConstraints = new MediaConstraints();
+    private MediaConstraints mMediaConstraints = new MediaConstraints();
 
-    private PeerConnectionFactory peerConnectionFactory;
-    private PeerConnection peerConnection;
+    private PeerConnectionFactory mPeerConnectionFactory;
+    private PeerConnection mPeerConnection;
 
     private String mCallId = "";
     private String mRoomId = "";
@@ -87,74 +87,73 @@ public class WebRTCClient {
     }
 
     public void switchCamera() {
-        if (videoCapturer != null) {
-            CameraVideoCapturer cameraVideoCapturer = (CameraVideoCapturer) videoCapturer;
+        if (mVideoCapturer != null) {
+            CameraVideoCapturer cameraVideoCapturer = (CameraVideoCapturer) mVideoCapturer;
             cameraVideoCapturer.switchCamera(null);
         }
     }
 
     public void microphoneOn() {
-        localAudioTrack.setEnabled(true);
+        mLocalAudioTrack.setEnabled(true);
     }
 
     public void microphoneOff() {
-        localAudioTrack.setEnabled(false);
+        mLocalAudioTrack.setEnabled(false);
     }
 
     public void disconnect() {
-        if (socket != null) {
-            socket.emit("message", "bye");
+        if (mSocket != null) {
+            mSocket.emit("message", "bye");
             close();
         }
     }
 
     private void close() {
 
-        if (socket != null) {
-            socket.disconnect();
-            socket.close();
+        if (mSocket != null) {
+            mSocket.disconnect();
+            mSocket.close();
         }
 
-        if (localVideoTrack != null) {
-            localVideoTrack.dispose();
-            localVideoTrack = null;
+        if (mLocalVideoTrack != null) {
+            mLocalVideoTrack.dispose();
+            mLocalVideoTrack = null;
         }
 
-        if (localAudioTrack != null) {
-            localAudioTrack.dispose();
-            localAudioTrack = null;
+        if (mLocalAudioTrack != null) {
+            mLocalAudioTrack.dispose();
+            mLocalAudioTrack = null;
         }
 
-        if (videoCapturer != null) {
-            videoCapturer.dispose();
-            videoCapturer = null;
+        if (mVideoCapturer != null) {
+            mVideoCapturer.dispose();
+            mVideoCapturer = null;
         }
 
         if (mOnWebRTCClientListener != null) {
             mOnWebRTCClientListener = null;
         }
 
-        if (peerConnectionFactory != null) {
-            peerConnectionFactory.stopAecDump();
-            peerConnectionFactory.dispose();
-            peerConnectionFactory = null;
+        if (mPeerConnection != null) {
+            mPeerConnection.close();
+            mPeerConnection = null;
         }
 
-        if (peerConnection != null) {
-            peerConnection.dispose();
-            peerConnection = null;
+        if (mPeerConnectionFactory != null) {
+            mPeerConnectionFactory.dispose();
+            mPeerConnectionFactory = null;
         }
     }
 
     public PeerConnectionFactory getPeerConnectionFactory() {
-        return peerConnectionFactory;
+        return mPeerConnectionFactory;
     }
 
     private void initSocket() {
         try {
-            socket = IO.socket(BASE_URL);
+            mSocket = IO.socket(BASE_URL);
 
-            socket.on(EVENT_CONNECT, args -> {
+            mSocket.on(EVENT_CONNECT, args -> {
                 Log.i(TAG, "event_connect = " + Arrays.toString(args));
 
             }).on("id", args -> {
@@ -220,7 +219,7 @@ public class WebRTCClient {
             }).on(EVENT_DISCONNECT, args -> {
                 Log.i(TAG, "event_disconnect : " + Arrays.toString(args));
             });
-            socket.connect();
+            mSocket.connect();
         } catch (URISyntaxException e) {
             e.printStackTrace();
             Log.e(TAG, "initSocket : URISyntaxException = " + e.getMessage());
@@ -241,27 +240,27 @@ public class WebRTCClient {
                 mEglBase.getEglBaseContext(),  /* enableIntelVp8Encoder */true,  /* enableH264HighProfile */true);
         DefaultVideoDecoderFactory defaultVideoDecoderFactory = new DefaultVideoDecoderFactory(mEglBase.getEglBaseContext());
 
-        peerConnectionFactory = PeerConnectionFactory.builder()
+        mPeerConnectionFactory = PeerConnectionFactory.builder()
                 .setOptions(options)
                 .setVideoEncoderFactory(defaultVideoEncoderFactory)
                 .setVideoDecoderFactory(defaultVideoDecoderFactory)
                 .createPeerConnectionFactory();
 
-        peerConnectionFactory.setVideoHwAccelerationOptions(mEglBase.getEglBaseContext(), mEglBase.getEglBaseContext());
+        mPeerConnectionFactory.setVideoHwAccelerationOptions(mEglBase.getEglBaseContext(), mEglBase.getEglBaseContext());
     }
 
     private void createVideoTrackFromCameraAndShowIt() {
         //Now create a VideoCapturer instance.
-        videoCapturer = createVideoCapturer();
-        VideoSource videoSource = peerConnectionFactory.createVideoSource(videoCapturer);
-        videoCapturer.startCapture(VIDEO_RESOLUTION_WIDTH, VIDEO_RESOLUTION_HEIGHT, FPS);
+        mVideoCapturer = createVideoCapturer();
+        VideoSource videoSource = mPeerConnectionFactory.createVideoSource(mVideoCapturer);
+        mVideoCapturer.startCapture(VIDEO_RESOLUTION_WIDTH, VIDEO_RESOLUTION_HEIGHT, FPS);
 
-        AudioSource audioSource = peerConnectionFactory.createAudioSource(mediaConstraints);
-        localAudioTrack = peerConnectionFactory.createAudioTrack(AUDIO_TRACK_ID, audioSource);
-        localAudioTrack.setEnabled(true);
+        AudioSource audioSource = mPeerConnectionFactory.createAudioSource(mMediaConstraints);
+        mLocalAudioTrack = mPeerConnectionFactory.createAudioTrack(AUDIO_TRACK_ID, audioSource);
+        mLocalAudioTrack.setEnabled(true);
 
-        localVideoTrack = peerConnectionFactory.createVideoTrack(VIDEO_TRACK_ID, videoSource);
-        localVideoTrack.setEnabled(true);
+        mLocalVideoTrack = mPeerConnectionFactory.createVideoTrack(VIDEO_TRACK_ID, videoSource);
+        mLocalVideoTrack.setEnabled(true);
     }
 
     private void initPeerConnections() {
@@ -272,9 +271,9 @@ public class WebRTCClient {
 
         PeerConnection.RTCConfiguration rtcConfig = new PeerConnection.RTCConfiguration(iceServers);
 
-        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
-        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
-        mediaConstraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
+        mMediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
+        mMediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
+        mMediaConstraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
 
         PeerConnection.Observer customPeerConnectionObserver = new CustomPeerConnectionObserver(TAG) {
 
@@ -298,7 +297,7 @@ public class WebRTCClient {
 
             @Override
             public void onIceCandidate(IceCandidate iceCandidate) {
-                peerConnection.addIceCandidate(iceCandidate);
+                mPeerConnection.addIceCandidate(iceCandidate);
                 try {
                     JSONObject payload = new JSONObject();
                     payload.put("label", iceCandidate.sdpMLineIndex);
@@ -316,7 +315,7 @@ public class WebRTCClient {
 
             @Override
             public void onAddStream(MediaStream mediaStream) {
-                peerConnection.addStream(mediaStream);
+                mPeerConnection.addStream(mediaStream);
                 if (mOnWebRTCClientListener != null) {
                     mOnWebRTCClientListener.onRemoteStream(mediaStream);
                 }
@@ -336,27 +335,27 @@ public class WebRTCClient {
             }
         };
 
-        peerConnection = peerConnectionFactory.createPeerConnection(rtcConfig, mediaConstraints, customPeerConnectionObserver);
+        mPeerConnection = mPeerConnectionFactory.createPeerConnection(rtcConfig, mMediaConstraints, customPeerConnectionObserver);
     }
 
     private void startStreamingVideo() {
-        MediaStream mediaStream = peerConnectionFactory.createLocalMediaStream("ARDAMS");
-        mediaStream.addTrack(localVideoTrack);
-        mediaStream.addTrack(localAudioTrack);
-        peerConnection.addStream(mediaStream);
+        MediaStream mediaStream = mPeerConnectionFactory.createLocalMediaStream("ARDAMS");
+        mediaStream.addTrack(mLocalVideoTrack);
+        mediaStream.addTrack(mLocalAudioTrack);
+        mPeerConnection.addStream(mediaStream);
         if (mOnWebRTCClientListener != null) {
             mOnWebRTCClientListener.onLocalStream(mediaStream);
         }
     }
 
     private void createOfferPeerConnection() {
-        if (peerConnection != null) {
-            peerConnection.createOffer(new CustomSdpObserver("createOffer") {
+        if (mPeerConnection != null) {
+            mPeerConnection.createOffer(new CustomSdpObserver("createOffer") {
                 @Override
                 public void onCreateSuccess(SessionDescription sessionDescription) {
                     super.onCreateSuccess(sessionDescription);
 
-                    peerConnection.setLocalDescription(new CustomSdpObserver("setLocalDescription"), sessionDescription);
+                    mPeerConnection.setLocalDescription(new CustomSdpObserver("setLocalDescription"), sessionDescription);
 
                     try {
                         JSONObject payload = new JSONObject();
@@ -367,7 +366,7 @@ public class WebRTCClient {
                         e.printStackTrace();
                     }
                 }
-            }, mediaConstraints);
+            }, mMediaConstraints);
         } else {
             Log.e(TAG, "createOfferPeerConnection == null");
         }
@@ -380,17 +379,17 @@ public class WebRTCClient {
             String sdp = payload.getString("sdp");
             SessionDescription sessionDescription = new SessionDescription(
                     SessionDescription.Type.fromCanonicalForm(type), sdp);
-            peerConnection.setRemoteDescription(new CustomSdpObserver("setRemoteDescription"), sessionDescription);
+            mPeerConnection.setRemoteDescription(new CustomSdpObserver("setRemoteDescription"), sessionDescription);
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        if (peerConnection != null) {
-            peerConnection.createAnswer(new CustomSdpObserver("createAnswer") {
+        if (mPeerConnection != null) {
+            mPeerConnection.createAnswer(new CustomSdpObserver("createAnswer") {
                 @Override
                 public void onCreateSuccess(SessionDescription sessionDescription) {
 
-                    peerConnection.setLocalDescription(new CustomSdpObserver("setLocalDescription"), sessionDescription);
+                    mPeerConnection.setLocalDescription(new CustomSdpObserver("setLocalDescription"), sessionDescription);
 
                     try {
                         JSONObject payload = new JSONObject();
@@ -401,7 +400,7 @@ public class WebRTCClient {
                         e.printStackTrace();
                     }
                 }
-            }, mediaConstraints);
+            }, mMediaConstraints);
         } else {
             Log.e(TAG, "createAnswerPeerConnection == null");
         }
@@ -413,7 +412,7 @@ public class WebRTCClient {
             String sdp = payload.getString("sdp");
             SessionDescription sessionDescription = new SessionDescription(
                     SessionDescription.Type.fromCanonicalForm(type), sdp);
-            peerConnection.setRemoteDescription(new CustomSdpObserver("setRemoteSDPCommand"), sessionDescription);
+            mPeerConnection.setRemoteDescription(new CustomSdpObserver("setRemoteSDPCommand"), sessionDescription);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -421,14 +420,14 @@ public class WebRTCClient {
 
     private void addIceCandidateCommand(JSONObject payload) {
         try {
-            if (peerConnection != null) {
-                if (peerConnection.getRemoteDescription() != null) {
+            if (mPeerConnection != null) {
+                if (mPeerConnection.getRemoteDescription() != null) {
                     IceCandidate candidate = new IceCandidate(
                             payload.getString("id"),
                             payload.getInt("label"),
                             payload.getString("candidate")
                     );
-                    peerConnection.addIceCandidate(candidate);
+                    mPeerConnection.addIceCandidate(candidate);
                 }
             } else {
                 Log.e(TAG, "addIceCandidateCommand == null");
@@ -440,11 +439,11 @@ public class WebRTCClient {
 
     private VideoCapturer createVideoCapturer() {
         if (useCamera2()) {
-            videoCapturer = createCameraCapturer(new Camera2Enumerator(mContext));
+            mVideoCapturer = createCameraCapturer(new Camera2Enumerator(mContext));
         } else {
-            videoCapturer = createCameraCapturer(new Camera1Enumerator(true));
+            mVideoCapturer = createCameraCapturer(new Camera1Enumerator(true));
         }
-        return videoCapturer;
+        return mVideoCapturer;
     }
 
     private VideoCapturer createCameraCapturer(CameraEnumerator enumerator) {
@@ -485,7 +484,7 @@ public class WebRTCClient {
     }
 
     private void emitJoin(String roomName) {
-        socket.emit("join", roomName);
+        mSocket.emit("join", roomName);
         Log.d(TAG, "emit_join : " + roomName);
     }
 
@@ -494,7 +493,7 @@ public class WebRTCClient {
         message.put("to", roomId);
         message.put("type", type);
         message.put("payload", payload);
-        socket.emit("message", message);
+        mSocket.emit("message", message);
         Log.d(TAG, "emit_message : " + message);
     }
 
