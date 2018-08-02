@@ -28,6 +28,9 @@
                     android:id="@+id/edtRoomId"
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:lines="1"
+                    android:maxLength="6"
                     android:hint="Room ID" />
 
                 <android.support.v7.widget.AppCompatButton

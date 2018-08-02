@@ -93,34 +93,56 @@ public class WebRTCClient {
         }
     }
 
-    public void muteOn() {
+    public void microphoneOn() {
         localAudioTrack.setEnabled(true);
     }
 
-    public void muteOff() {
+    public void microphoneOff() {
         localAudioTrack.setEnabled(false);
     }
 
-    public void hangUp() {
+    public void disconnect() {
         if (socket != null) {
             socket.emit("message", "bye");
-            socket.disconnect();
+            close();
         }
     }
 
-    public void close() {
-
-        if (peerConnectionFactory != null) {
-            peerConnectionFactory.dispose();
-        }
-
-        if (peerConnection != null) {
-            peerConnection.dispose();
-        }
+    private void close() {
 
         if (socket != null) {
             socket.disconnect();
             socket.close();
+        }
+
+        if (localVideoTrack != null) {
+            localVideoTrack.dispose();
+            localVideoTrack = null;
+        }
+
+        if (localAudioTrack != null) {
+            localAudioTrack.dispose();
+            localAudioTrack = null;
+        }
+
+        if (videoCapturer != null) {
+            videoCapturer.dispose();
+            videoCapturer = null;
+        }
+
+        if (mOnWebRTCClientListener != null) {
+            mOnWebRTCClientListener = null;
+        }
+
+        if (peerConnectionFactory != null) {
+            peerConnectionFactory.stopAecDump();
+            peerConnectionFactory.dispose();
+            peerConnectionFactory = null;
+        }
+
+        if (peerConnection != null) {
+            peerConnection.dispose();
+            peerConnection = null;
         }
     }
 
@@ -230,7 +252,7 @@ public class WebRTCClient {
 
     private void createVideoTrackFromCameraAndShowIt() {
         //Now create a VideoCapturer instance.
-        VideoCapturer videoCapturer = createVideoCapturer();
+        videoCapturer = createVideoCapturer();
         VideoSource videoSource = peerConnectionFactory.createVideoSource(videoCapturer);
         videoCapturer.startCapture(VIDEO_RESOLUTION_WIDTH, VIDEO_RESOLUTION_HEIGHT, FPS);
 

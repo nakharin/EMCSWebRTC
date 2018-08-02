@@ -4,6 +4,7 @@ import android.Manifest;
 import android.os.Bundle;
 import android.support.percent.PercentFrameLayout;
 import android.support.percent.PercentLayoutHelper;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.util.Log;
@@ -98,11 +99,30 @@ public class VideoCallActivity extends AppCompatActivity {
         imgMute.setOnClickListener(onClickListener);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        webRTCClient.close();
-    }
+//    @Override
+//    protected void onDestroy() {
+//
+//        Toast.makeText(this, "onDestroy", Toast.LENGTH_SHORT).show();
+//
+//        webRTCClient.hangUp();
+//
+//        if (localSurfaceView != null) {
+//            localSurfaceView.release();
+//            localSurfaceView = null;
+//        }
+//
+//        if (remoteSurfaceView != null) {
+//            remoteSurfaceView.release();
+//            remoteSurfaceView = null;
+//        }
+//
+//        if (rootEglBase != null) {
+//            rootEglBase.release();
+//            rootEglBase = null;
+//        }
+//
+//        super.onDestroy();
+//    }
 
     private void initWidgets() {
         rootLayout = findViewById(R.id.rootLayout);
@@ -248,7 +268,7 @@ public class VideoCallActivity extends AppCompatActivity {
      ******************************* Listener ***********************************
      ****************************************************************************/
 
-    private boolean isMute = false;
+    private boolean isMute = true;
     private boolean isShow = true;
     private WINDOW_TYPE windowType = WINDOW_TYPE.LOCAL_SMALL;
 
@@ -287,7 +307,31 @@ public class VideoCallActivity extends AppCompatActivity {
         }
 
         if (v == imgHangUp) {
-            webRTCClient.hangUp();
+
+            if (localSurfaceView != null) {
+                localSurfaceView.release();
+                localSurfaceView = null;
+            }
+
+            if (remoteSurfaceView != null) {
+                remoteSurfaceView.release();
+                remoteSurfaceView = null;
+            }
+
+            if (rootEglBase != null) {
+                rootEglBase.release();
+                rootEglBase = null;
+            }
+
+            if (webRTCClient != null) {
+                webRTCClient.disconnect();
+                webRTCClient = null;
+            }
+
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Local HangUp", Toast.LENGTH_SHORT).show();
+                finish();
+            });
         }
 
         if (v == imgSwitchCamera) {
@@ -296,11 +340,13 @@ public class VideoCallActivity extends AppCompatActivity {
 
         if (v == imgMute) {
             if (!isMute) {
-                webRTCClient.muteOn();
+                webRTCClient.microphoneOn();
+                imgMute.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.mipmap.ic_mic_on));
                 isMute = true;
             } else {
-                webRTCClient.muteOff();
-                isMute = true;
+                webRTCClient.microphoneOff();
+                imgMute.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.mipmap.ic_mic_off));
+                isMute = false;
             }
         }
     };
@@ -364,7 +410,9 @@ public class VideoCallActivity extends AppCompatActivity {
 
         @Override
         public void onRemoteHangUp() {
-            webRTCClient.hangUp();
+            Toast.makeText(getApplicationContext(), "Remote HangUp", Toast.LENGTH_SHORT).show();
+            finish();
+//            webRTCClient.hangUp();
         }
     };
 }
