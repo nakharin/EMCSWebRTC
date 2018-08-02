@@ -65,11 +65,12 @@ public class WebRTCClient {
     private PeerConnectionFactory peerConnectionFactory;
     private PeerConnection peerConnection;
 
-    private String callId = "";
-    private String roomId = "";
+    private String mCallId = "";
+    private String mRoomId = "";
 
-    public WebRTCClient(Context context, EglBase eglBase, OnWebRTCClientListener onWebRTCClientListener) {
+    public WebRTCClient(Context context, String roomId, EglBase eglBase, OnWebRTCClientListener onWebRTCClientListener) {
         mContext = context;
+        mRoomId = roomId;
         mEglBase = eglBase;
         mOnWebRTCClientListener = onWebRTCClientListener;
 
@@ -135,19 +136,19 @@ public class WebRTCClient {
                 Log.i(TAG, "event_connect = " + Arrays.toString(args));
 
             }).on("id", args -> {
-                callId = (String) args[0];
+                mCallId = (String) args[0];
                 Log.i(TAG, "event_id : " + Arrays.toString(args));
                 if (mOnWebRTCClientListener != null) {
-                    mOnWebRTCClientListener.onCallReady(callId);
+                    mOnWebRTCClientListener.onCallReady(mCallId);
                 }
 
-                emitJoin("emcs02");
+                emitJoin(mRoomId);
 
             }).on("joined", args -> {
-                roomId = (String) args[0];
+                mRoomId = (String) args[0];
                 Log.i(TAG, "event_joined : " + Arrays.toString(args));
                 try {
-                    emitMessage(roomId, "init", null);
+                    emitMessage(mRoomId, "init", null);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -281,7 +282,7 @@ public class WebRTCClient {
                     payload.put("label", iceCandidate.sdpMLineIndex);
                     payload.put("id", iceCandidate.sdpMid);
                     payload.put("candidate", iceCandidate.sdp);
-                    emitMessage(roomId, "candidate", payload);
+                    emitMessage(mRoomId, "candidate", payload);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -339,7 +340,7 @@ public class WebRTCClient {
                         JSONObject payload = new JSONObject();
                         payload.put("type", sessionDescription.type.canonicalForm());
                         payload.put("sdp", sessionDescription.description);
-                        emitMessage(roomId, sessionDescription.type.canonicalForm(), payload);
+                        emitMessage(mRoomId, sessionDescription.type.canonicalForm(), payload);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -373,7 +374,7 @@ public class WebRTCClient {
                         JSONObject payload = new JSONObject();
                         payload.put("type", sessionDescription.type.canonicalForm());
                         payload.put("sdp", sessionDescription.description);
-                        emitMessage(roomId, sessionDescription.type.canonicalForm(), payload);
+                        emitMessage(mRoomId, sessionDescription.type.canonicalForm(), payload);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
