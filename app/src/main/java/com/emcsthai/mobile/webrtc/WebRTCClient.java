@@ -37,6 +37,8 @@ import static io.socket.client.Socket.EVENT_CONNECT;
 import static io.socket.client.Socket.EVENT_DISCONNECT;
 import static io.socket.client.Socket.EVENT_MESSAGE;
 
+// TODO: 2/8/2018 AD WebRTCClient
+
 public class WebRTCClient {
 
     private final static String TAG = WebRTCClient.class.getCanonicalName();
@@ -60,8 +62,6 @@ public class WebRTCClient {
 
     private Socket mSocket;
 
-    private MediaConstraints mMediaConstraints = new MediaConstraints();
-
     private PeerConnectionFactory mPeerConnectionFactory;
     private PeerConnection mPeerConnection;
 
@@ -75,8 +75,6 @@ public class WebRTCClient {
         mOnWebRTCClientListener = onWebRTCClientListener;
 
         // Method from this class
-        initSocket();
-        // Method from this class
         initPeerConnectionFactory();
         // Method from this class
         createVideoTrackFromCameraAndShowIt();
@@ -84,6 +82,8 @@ public class WebRTCClient {
         initPeerConnections();
         // Method from this class
         startStreamingVideo();
+        // Method from this class
+        initSocket();
     }
 
     public void switchCamera() {
@@ -169,6 +169,7 @@ public class WebRTCClient {
                 mRoomId = (String) args[0];
                 Log.i(TAG, "event_joined : " + Arrays.toString(args));
                 try {
+
                     emitMessage(mRoomId, "init", null);
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -178,29 +179,37 @@ public class WebRTCClient {
                 Log.i(TAG, "event_message : " + Arrays.toString(args));
                 try {
 
-                    JSONObject data = (JSONObject) args[0];
-                    JSONObject payload = null;
+                    // TODO: 2/8/2018 AD message
 
+                    JSONObject data = (JSONObject) args[0];
+
+                    String os = data.getString("os");
                     String type = data.getString("type");
 
-                    if (!type.equals("init")) {
-                        payload = data.getJSONObject("payload");
-                    }
-
                     if (type.equals("init")) {
-                        createOfferPeerConnection();
+                        if (os.equals("web")) {
+                            createOfferPeerConnection();
+                        }
                     }
 
                     if (type.equals("offer")) {
-                        createAnswerPeerConnection(payload);
+                        if (os.equals("web")) {
+                            JSONObject payload = data.getJSONObject("payload");
+                            setRemoteSDPCommandOffer(payload);
+                            createAnswerPeerConnection();
+                        }
                     }
 
                     if (type.equals("answer")) {
-                        setRemoteSDPCommand(payload);
+                        if (os.equals("web")) {
+                            JSONObject payload = data.getJSONObject("payload");
+                            setRemoteSDPCommandAnswer(payload);
+                        }
                     }
 
                     if (type.equals("candidate")) {
-                        addIceCandidateCommand(payload);
+                            JSONObject payload = data.getJSONObject("payload");
+                            addIceCandidateCommand(payload);
                     }
 
                 } catch (JSONException | ClassCastException e) {
@@ -255,7 +264,7 @@ public class WebRTCClient {
         VideoSource videoSource = mPeerConnectionFactory.createVideoSource(mVideoCapturer);
         mVideoCapturer.startCapture(VIDEO_RESOLUTION_WIDTH, VIDEO_RESOLUTION_HEIGHT, FPS);
 
-        AudioSource audioSource = mPeerConnectionFactory.createAudioSource(mMediaConstraints);
+        AudioSource audioSource = mPeerConnectionFactory.createAudioSource(new MediaConstraints());
         mLocalAudioTrack = mPeerConnectionFactory.createAudioTrack(AUDIO_TRACK_ID, audioSource);
         mLocalAudioTrack.setEnabled(true);
 
@@ -271,10 +280,6 @@ public class WebRTCClient {
 
         PeerConnection.RTCConfiguration rtcConfig = new PeerConnection.RTCConfiguration(iceServers);
 
-        mMediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
-        mMediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
-        mMediaConstraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
-
         PeerConnection.Observer customPeerConnectionObserver = new CustomPeerConnectionObserver(TAG) {
 
             @Override
@@ -283,8 +288,6 @@ public class WebRTCClient {
 
             @Override
             public void onIceConnectionChange(PeerConnection.IceConnectionState iceConnectionState) {
-                if (iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED) {
-                }
             }
 
             @Override
@@ -297,7 +300,6 @@ public class WebRTCClient {
 
             @Override
             public void onIceCandidate(IceCandidate iceCandidate) {
-                mPeerConnection.addIceCandidate(iceCandidate);
                 try {
                     JSONObject payload = new JSONObject();
                     payload.put("label", iceCandidate.sdpMLineIndex);
@@ -323,7 +325,6 @@ public class WebRTCClient {
 
             @Override
             public void onRemoveStream(MediaStream mediaStream) {
-                mediaStream.dispose();
             }
 
             @Override
@@ -335,7 +336,7 @@ public class WebRTCClient {
             }
         };
 
-        mPeerConnection = mPeerConnectionFactory.createPeerConnection(rtcConfig, mMediaConstraints, customPeerConnectionObserver);
+        mPeerConnection = mPeerConnectionFactory.createPeerConnection(rtcConfig, new MediaConstraints(), customPeerConnectionObserver);
     }
 
     private void startStreamingVideo() {
@@ -349,70 +350,59 @@ public class WebRTCClient {
     }
 
     private void createOfferPeerConnection() {
-        if (mPeerConnection != null) {
-            mPeerConnection.createOffer(new CustomSdpObserver("createOffer") {
-                @Override
-                public void onCreateSuccess(SessionDescription sessionDescription) {
-                    super.onCreateSuccess(sessionDescription);
+        mPeerConnection.createOffer(new CustomSdpObserver(TAG) {
+            @Override
+            public void onCreateSuccess(SessionDescription sessionDescription) {
+                super.onCreateSuccess(sessionDescription);
+                mPeerConnection.setLocalDescription(new CustomSdpObserver(TAG), sessionDescription);
 
-                    mPeerConnection.setLocalDescription(new CustomSdpObserver("setLocalDescription"), sessionDescription);
-
-                    try {
-                        JSONObject payload = new JSONObject();
-                        payload.put("type", sessionDescription.type.canonicalForm());
-                        payload.put("sdp", sessionDescription.description);
-                        emitMessage(mRoomId, sessionDescription.type.canonicalForm(), payload);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }, mMediaConstraints);
-        } else {
-            Log.e(TAG, "createOfferPeerConnection == null");
-        }
+//                try {
+//                    JSONObject payload = new JSONObject();
+//                    payload.put("type", sessionDescription.type.canonicalForm());
+//                    payload.put("sdp", sessionDescription.description);
+//                    emitMessage(mRoomId, sessionDescription.type.canonicalForm(), payload);
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+            }
+        }, new MediaConstraints());
     }
 
-    private void createAnswerPeerConnection(JSONObject payload) {
+    private void createAnswerPeerConnection() {
+        mPeerConnection.createAnswer(new CustomSdpObserver(TAG) {
+            @Override
+            public void onCreateSuccess(SessionDescription sessionDescription) {
+                try {
+                    JSONObject payload = new JSONObject();
+                    payload.put("type", sessionDescription.type.canonicalForm());
+                    payload.put("sdp", sessionDescription.description);
+                    emitMessage(mRoomId, sessionDescription.type.canonicalForm(), payload);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new MediaConstraints());
+    }
 
+    private void setRemoteSDPCommandOffer(JSONObject payload) {
         try {
             String type = payload.getString("type");
             String sdp = payload.getString("sdp");
             SessionDescription sessionDescription = new SessionDescription(
-                    SessionDescription.Type.fromCanonicalForm(type), sdp);
-            mPeerConnection.setRemoteDescription(new CustomSdpObserver("setRemoteDescription"), sessionDescription);
+                    SessionDescription.Type.OFFER, sdp);
+            mPeerConnection.setRemoteDescription(new CustomSdpObserver(TAG), sessionDescription);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-        if (mPeerConnection != null) {
-            mPeerConnection.createAnswer(new CustomSdpObserver("createAnswer") {
-                @Override
-                public void onCreateSuccess(SessionDescription sessionDescription) {
-
-                    mPeerConnection.setLocalDescription(new CustomSdpObserver("setLocalDescription"), sessionDescription);
-
-                    try {
-                        JSONObject payload = new JSONObject();
-                        payload.put("type", sessionDescription.type.canonicalForm());
-                        payload.put("sdp", sessionDescription.description);
-                        emitMessage(mRoomId, sessionDescription.type.canonicalForm(), payload);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }, mMediaConstraints);
-        } else {
-            Log.e(TAG, "createAnswerPeerConnection == null");
-        }
     }
 
-    private void setRemoteSDPCommand(JSONObject payload) {
+    private void setRemoteSDPCommandAnswer(JSONObject payload) {
         try {
             String type = payload.getString("type");
             String sdp = payload.getString("sdp");
             SessionDescription sessionDescription = new SessionDescription(
-                    SessionDescription.Type.fromCanonicalForm(type), sdp);
-            mPeerConnection.setRemoteDescription(new CustomSdpObserver("setRemoteSDPCommand"), sessionDescription);
+                    SessionDescription.Type.ANSWER, sdp);
+            mPeerConnection.setRemoteDescription(new CustomSdpObserver(TAG), sessionDescription);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -420,18 +410,12 @@ public class WebRTCClient {
 
     private void addIceCandidateCommand(JSONObject payload) {
         try {
-            if (mPeerConnection != null) {
-                if (mPeerConnection.getRemoteDescription() != null) {
-                    IceCandidate candidate = new IceCandidate(
-                            payload.getString("id"),
-                            payload.getInt("label"),
-                            payload.getString("candidate")
-                    );
-                    mPeerConnection.addIceCandidate(candidate);
-                }
-            } else {
-                Log.e(TAG, "addIceCandidateCommand == null");
-            }
+            IceCandidate candidate = new IceCandidate(
+                    payload.getString("id"),
+                    payload.getInt("label"),
+                    payload.getString("candidate")
+            );
+            mPeerConnection.addIceCandidate(candidate);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -490,6 +474,7 @@ public class WebRTCClient {
 
     private void emitMessage(String roomId, String type, JSONObject payload) throws JSONException {
         JSONObject message = new JSONObject();
+        message.put("os", "mobile");
         message.put("to", roomId);
         message.put("type", type);
         message.put("payload", payload);

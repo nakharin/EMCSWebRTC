@@ -392,7 +392,7 @@ public class VideoCallActivity extends AppCompatActivity {
             VideoRenderer videoRenderer = new VideoRenderer(remoteSurfaceView);
 
             AudioTrack audioTrack = mediaStream.audioTracks.get(0);
-            audioTrack.setVolume(10);
+//            audioTrack.setVolume(10);
 
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             videoTrack.addRenderer(videoRenderer);
