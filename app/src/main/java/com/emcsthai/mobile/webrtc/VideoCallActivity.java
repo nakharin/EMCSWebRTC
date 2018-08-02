@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -37,8 +38,6 @@ public class VideoCallActivity extends AppCompatActivity {
 
     private RelativeLayout rootLayout;
     private ImageView imgScreenType;
-
-    private PercentFrameLayout percentLayout;
 
     private SurfaceViewRenderer remoteSurfaceView;
     private SurfaceViewRenderer localSurfaceView;
@@ -101,20 +100,12 @@ public class VideoCallActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        handUp();
+        dialogHandUp();
     }
 
     private void initWidgets() {
         rootLayout = findViewById(R.id.rootLayout);
         imgScreenType = findViewById(R.id.imgScreenType);
-
-        percentLayout = findViewById(R.id.percentLayout);
 
         remoteSurfaceView = findViewById(R.id.remoteSurfaceView);
         localSurfaceView = findViewById(R.id.localSurfaceView);
@@ -250,6 +241,22 @@ public class VideoCallActivity extends AppCompatActivity {
 //        selectSurfaceView.requestLayout();
 //    }
 
+    private void dialogHandUp() {
+        new MaterialDialog.Builder(this)
+                .title("Hand up")
+                .content("Do you want hand up?")
+                .positiveText("Yes")
+                .negativeText("No")
+                .onPositive((dialog, which) -> {
+                    dialog.dismiss();
+                    handUp();
+                    finish();
+                })
+                .onNegative((dialog, which) -> {
+                    dialog.dismiss();
+                }).show();
+    }
+
     private void handUp() {
         if (localSurfaceView != null) {
             localSurfaceView.release();
@@ -271,9 +278,7 @@ public class VideoCallActivity extends AppCompatActivity {
             webRTCClient = null;
         }
 
-        Toast.makeText(this, "Local HangUp", Toast.LENGTH_SHORT).show();
-
-        finish();
+        Toast.makeText(this, "Hang up finished", Toast.LENGTH_SHORT).show();
     }
 
     /****************************************************************************
@@ -319,7 +324,7 @@ public class VideoCallActivity extends AppCompatActivity {
         }
 
         if (v == imgHangUp) {
-            handUp();
+            dialogHandUp();
         }
 
         if (v == imgSwitchCamera) {

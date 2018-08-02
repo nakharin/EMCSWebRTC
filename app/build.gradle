@@ -40,4 +40,5 @@ dependencies {
     }
 
     implementation 'com.android.support:percent:27.1.1'
+    implementation 'com.afollestad.material-dialogs:commons:0.9.6.0'
 }
