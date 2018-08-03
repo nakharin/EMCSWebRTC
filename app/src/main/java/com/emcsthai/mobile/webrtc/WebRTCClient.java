@@ -187,12 +187,13 @@ public class WebRTCClient {
 
                     if (os.equals("web") && type.equals("offer")) {
                         JSONObject payload = data.getJSONObject("payload");
-                        setRemoteSDPCommand(payload);
+                        receiveOffer(payload);
+                        createAnswer();
                     }
 
                     if (os.equals("web") && type.equals("candidate")) {
                         JSONObject payload = data.getJSONObject("payload");
-                        addIceCandidateCommand(payload);
+                        receiveIceCandidate(payload);
                     }
 
                 } catch (JSONException | ClassCastException e) {
@@ -279,48 +280,39 @@ public class WebRTCClient {
         }
     }
 
-    private void setRemoteSDPCommand(JSONObject payload) {
-        Log.i(TAG, "setRemoteSDPCommand");
+    private void receiveOffer(JSONObject payload) {
+        Log.i(TAG, "receiveOffer");
         try {
             String type = payload.getString("type");
             String sdp = payload.getString("sdp");
             SessionDescription sessionDescription = new SessionDescription(
                     SessionDescription.Type.fromCanonicalForm(type), sdp);
-            mPeerConnection.setRemoteDescription(new CustomSdpObserver(TAG) {
-                @Override
-                public void onSetSuccess() {
-                    createAnswerPeerConnection();
-                }
-            }, sessionDescription);
+            mPeerConnection.setRemoteDescription(new CustomSdpObserver(TAG), sessionDescription);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private void createAnswerPeerConnection() {
-        Log.i(TAG, "createAnswerPeerConnection");
+    private void createAnswer() {
+        Log.i(TAG, "createAnswer");
         mPeerConnection.createAnswer(new CustomSdpObserver(TAG) {
             @Override
             public void onCreateSuccess(SessionDescription sessionDescription) {
-                mPeerConnection.setLocalDescription(new CustomSdpObserver(TAG) {
-                    @Override
-                    public void onSetSuccess() {
-                        try {
-                            JSONObject payload = new JSONObject();
-                            payload.put("type", sessionDescription.type.canonicalForm());
-                            payload.put("sdp", sessionDescription.description);
-                            emitMessage(mRoomId, sessionDescription.type.canonicalForm(), payload);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, sessionDescription);
+                mPeerConnection.setLocalDescription(new CustomSdpObserver(TAG), sessionDescription);
+                try {
+                    JSONObject payload = new JSONObject();
+                    payload.put("type", sessionDescription.type.canonicalForm());
+                    payload.put("sdp", sessionDescription.description);
+                    emitMessage(mRoomId, sessionDescription.type.canonicalForm(), payload);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }, new MediaConstraints());
     }
 
-    private void addIceCandidateCommand(JSONObject payload) {
-        Log.i(TAG, "addIceCandidateCommand");
+    private void receiveIceCandidate(JSONObject payload) {
+        Log.i(TAG, "receiveIceCandidate");
         try {
             IceCandidate candidate = new IceCandidate(
                     payload.getString("id"),
@@ -469,8 +461,11 @@ public class WebRTCClient {
 
     public interface OnWebRTCClientListener {
         void onCallReady(String callId);
+
         void onLocalStream(MediaStream mediaStream);
+
         void onRemoteStream(MediaStream mediaStream);
+
         void onHangUp();
     }
 }
