@@ -275,8 +275,6 @@ public class VideoCallActivity extends AppCompatActivity {
             webRTCClient.disconnect();
             webRTCClient = null;
         }
-
-        Toast.makeText(this, "Hang up", Toast.LENGTH_SHORT).show();
     }
 
     /****************************************************************************
