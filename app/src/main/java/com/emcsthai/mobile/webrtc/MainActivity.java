@@ -13,8 +13,6 @@ public class MainActivity extends AppCompatActivity {
 
     public final static String KEY_ROOM_ID = "KEY_ROOM_ID";
 
-    private Toolbar toolbar;
-
     private AppCompatEditText edtRoomId;
     private AppCompatButton btnJoin;
 
@@ -30,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initWidgets() {
 
-        toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("EMCSWebRTC");
         setSupportActionBar(toolbar);
 
