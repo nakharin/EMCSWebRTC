@@ -23,7 +23,7 @@ class CustomSdpObserver implements SdpObserver {
 
     @Override
     public void onCreateSuccess(SessionDescription sessionDescription) {
-        Log.i(tag, "onCreateSuccess() called with: sessionDescription = [" + sessionDescription + "]");
+        Log.d(tag, "onCreateSuccess() called with: sessionDescription = [" + sessionDescription + "]");
     }
 
     @Override

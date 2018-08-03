@@ -32,8 +32,6 @@ import java.util.List;
 
 public class VideoCallActivity extends AppCompatActivity {
 
-    private final static String TAG = VideoCallActivity.class.getCanonicalName();
-
     private EglBase rootEglBase;
 
     private RelativeLayout rootLayout;
@@ -278,7 +276,7 @@ public class VideoCallActivity extends AppCompatActivity {
             webRTCClient = null;
         }
 
-        Toast.makeText(this, "Hang up finished", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Hang up", Toast.LENGTH_SHORT).show();
     }
 
     /****************************************************************************
@@ -380,7 +378,6 @@ public class VideoCallActivity extends AppCompatActivity {
 
         @Override
         public void onLocalStream(MediaStream mediaStream) {
-            Log.i(TAG, "onLocalStream");
             VideoRenderer videoRenderer = new VideoRenderer(localSurfaceView);
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             videoTrack.addRenderer(videoRenderer);
@@ -388,11 +385,10 @@ public class VideoCallActivity extends AppCompatActivity {
 
         @Override
         public void onRemoteStream(MediaStream mediaStream) {
-            Log.d(TAG, "onRemoteStream");
             VideoRenderer videoRenderer = new VideoRenderer(remoteSurfaceView);
 
             AudioTrack audioTrack = mediaStream.audioTracks.get(0);
-//            audioTrack.setVolume(10);
+            audioTrack.setVolume(10);
 
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             videoTrack.addRenderer(videoRenderer);
@@ -402,10 +398,9 @@ public class VideoCallActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onRemoteHangUp() {
-            Toast.makeText(getApplicationContext(), "Remote HangUp", Toast.LENGTH_SHORT).show();
+        public void onHangUp() {
+            handUp();
             finish();
-//            webRTCClient.hangUp();
         }
     };
 }
