@@ -274,13 +274,7 @@ public class WebRTCClient {
         iceServers.add(PeerConnection.IceServer.builder("stun:23.21.150.121").createIceServer());
         iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
 
-        PeerConnection.RTCConfiguration rtcConfig = new PeerConnection.RTCConfiguration(iceServers);
-
-        mMediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
-        mMediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
-        mMediaConstraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
-
-        mPeerConnection = mPeerConnectionFactory.createPeerConnection(rtcConfig, mMediaConstraints, customPeerConnectionObserver);
+        mPeerConnection = mPeerConnectionFactory.createPeerConnection(iceServers, customPeerConnectionObserver);
     }
 
     private void startStreamingVideo() {
