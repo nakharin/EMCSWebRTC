@@ -7,7 +7,6 @@ import android.support.percent.PercentLayoutHelper;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
@@ -25,7 +24,8 @@ import org.webrtc.AudioTrack;
 import org.webrtc.EglBase;
 import org.webrtc.MediaStream;
 import org.webrtc.SurfaceViewRenderer;
-import org.webrtc.VideoRenderer;
+import org.webrtc.VideoFrame;
+import org.webrtc.VideoSink;
 import org.webrtc.VideoTrack;
 
 import java.util.List;
@@ -376,20 +376,32 @@ public class VideoCallActivity extends AppCompatActivity {
 
         @Override
         public void onLocalStream(MediaStream mediaStream) {
-            VideoRenderer videoRenderer = new VideoRenderer(localSurfaceView);
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
-            videoTrack.addRenderer(videoRenderer);
+            VideoSink videoSink = videoFrame -> {
+                if (videoFrame != null) {
+                    if (localSurfaceView != null) {
+                        localSurfaceView.onFrame(videoFrame);
+                    }
+                }
+            };
+            videoTrack.addSink(videoSink);
         }
 
         @Override
         public void onRemoteStream(MediaStream mediaStream) {
-            VideoRenderer videoRenderer = new VideoRenderer(remoteSurfaceView);
-
             AudioTrack audioTrack = mediaStream.audioTracks.get(0);
             audioTrack.setVolume(10);
 
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
-            videoTrack.addRenderer(videoRenderer);
+            VideoSink videoSink = videoFrame -> {
+                if (videoFrame != null) {
+                    if (remoteSurfaceView != null) {
+                        remoteSurfaceView.onFrame(videoFrame);
+                    }
+                }
+            };
+
+            videoTrack.addSink(videoSink);
 
             // Method from this class
             updateLocalSmallVideoView();
