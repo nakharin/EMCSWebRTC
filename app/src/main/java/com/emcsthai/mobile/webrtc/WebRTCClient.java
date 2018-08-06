@@ -290,10 +290,10 @@ public class WebRTCClient {
 
     private void createOffer() {
         Log.i(TAG, "createOffer");
-        mPeerConnection.createOffer(new CustomSdpObserver(TAG) {
+        mPeerConnection.createOffer(new CustomSdpObserver("createOffer") {
             @Override
             public void onCreateSuccess(SessionDescription sessionDescription) {
-                mPeerConnection.setLocalDescription(new CustomSdpObserver(TAG), sessionDescription);
+                mPeerConnection.setLocalDescription(new CustomSdpObserver("setLocalDescription"), sessionDescription);
                 try {
                     JSONObject payload = new JSONObject();
                     payload.put("type", sessionDescription.type.canonicalForm());
@@ -313,7 +313,7 @@ public class WebRTCClient {
             String sdp = payload.getString("sdp");
             SessionDescription sessionDescription = new SessionDescription(
                     SessionDescription.Type.fromCanonicalForm(type), sdp);
-            mPeerConnection.setRemoteDescription(new CustomSdpObserver(TAG), sessionDescription);
+            mPeerConnection.setRemoteDescription(new CustomSdpObserver("setRemoteDescription"), sessionDescription);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -321,10 +321,10 @@ public class WebRTCClient {
 
     private void createAnswer() {
         Log.i(TAG, "createAnswer");
-        mPeerConnection.createAnswer(new CustomSdpObserver(TAG) {
+        mPeerConnection.createAnswer(new CustomSdpObserver("createAnswer") {
             @Override
             public void onCreateSuccess(SessionDescription sessionDescription) {
-                mPeerConnection.setLocalDescription(new CustomSdpObserver(TAG), sessionDescription);
+                mPeerConnection.setLocalDescription(new CustomSdpObserver("setLocalDescription"), sessionDescription);
                 try {
                     JSONObject payload = new JSONObject();
                     payload.put("type", sessionDescription.type.canonicalForm());
@@ -344,7 +344,7 @@ public class WebRTCClient {
             String sdp = payload.getString("sdp");
             SessionDescription sessionDescription = new SessionDescription(
                     SessionDescription.Type.fromCanonicalForm(type), sdp);
-            mPeerConnection.setRemoteDescription(new CustomSdpObserver(TAG), sessionDescription);
+            mPeerConnection.setRemoteDescription(new CustomSdpObserver("setRemoteDescription"), sessionDescription);
         } catch (JSONException e) {
             e.printStackTrace();
         }
