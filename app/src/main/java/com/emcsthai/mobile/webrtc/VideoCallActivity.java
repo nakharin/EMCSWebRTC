@@ -2,6 +2,7 @@ package com.emcsthai.mobile.webrtc;
 
 import android.Manifest;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.percent.PercentFrameLayout;
 import android.support.percent.PercentLayoutHelper;
 import android.support.v4.content.ContextCompat;
@@ -9,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -24,7 +26,6 @@ import org.webrtc.AudioTrack;
 import org.webrtc.EglBase;
 import org.webrtc.MediaStream;
 import org.webrtc.SurfaceViewRenderer;
-import org.webrtc.VideoFrame;
 import org.webrtc.VideoSink;
 import org.webrtc.VideoTrack;
 
@@ -159,16 +160,10 @@ public class VideoCallActivity extends AppCompatActivity {
             info.widthPercent = 0.35f;
             info.leftMarginPercent = 0.60f;
             info.topMarginPercent = 0.65f;
-            localSurfaceView.requestLayout();
-
-            localSurfaceView.requestFocus();
-            localSurfaceView.invalidate();
-            remoteSurfaceView.invalidate();
-            remoteSurfaceView.requestLayout();
-            localSurfaceView.requestLayout();
-
 
             windowType = WINDOW_TYPE.LOCAL_SMALL;
+
+            sendViewToBack(remoteSurfaceView);
         });
     }
 
@@ -182,16 +177,19 @@ public class VideoCallActivity extends AppCompatActivity {
             info.widthPercent = 0.35f;
             info.leftMarginPercent = 0.60f;
             info.topMarginPercent = 0.65f;
-            remoteSurfaceView.requestLayout();
-
-            remoteSurfaceView.requestFocus();
-            localSurfaceView.invalidate();
-            remoteSurfaceView.invalidate();
-            remoteSurfaceView.requestLayout();
-            localSurfaceView.requestLayout();
 
             windowType = WINDOW_TYPE.REMOTE_SMALL;
+
+            sendViewToBack(localSurfaceView);
         });
+    }
+
+    private void sendViewToBack(@NonNull View child) {
+        final ViewGroup parent = (ViewGroup) child.getParent();
+        if (null != parent) {
+            parent.removeView(child);
+            parent.addView(child, 0);
+        }
     }
 
     private void updateSplitHalfVideoView() {
@@ -218,26 +216,6 @@ public class VideoCallActivity extends AppCompatActivity {
             windowType = WINDOW_TYPE.SPLIT_HALF;
         });
     }
-
-//    private void updateMoveToBottomVideoView(SurfaceViewRenderer selectSurfaceView) {
-//        PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) selectSurfaceView.getLayoutParams();
-//        PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
-//        info.heightPercent = 0.30f;
-//        info.widthPercent = 0.35f;
-//        info.leftMarginPercent = 0.60f;
-//        info.topMarginPercent = 0.65f;
-//        selectSurfaceView.requestLayout();
-//    }
-//
-//    private void updateMoveToTopVideoView(SurfaceViewRenderer selectSurfaceView) {
-//        PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) selectSurfaceView.getLayoutParams();
-//        PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
-//        info.heightPercent = 0.30f;
-//        info.widthPercent = 0.35f;
-//        info.leftMarginPercent = 0.60f;
-//        info.topMarginPercent = 0.55f;
-//        selectSurfaceView.requestLayout();
-//    }
 
     private void dialogHandUp() {
         new MaterialDialog.Builder(this)
@@ -295,12 +273,10 @@ public class VideoCallActivity extends AppCompatActivity {
             if (!isShow) {
                 cardView.setVisibility(View.VISIBLE);
                 imgScreenType.setVisibility(View.VISIBLE);
-//                updateMoveToTopVideoView(localSurfaceView);
                 isShow = true;
             } else {
                 cardView.setVisibility(View.GONE);
                 imgScreenType.setVisibility(View.GONE);
-//                updateMoveToBottomVideoView(localSurfaceView);
                 isShow = false;
             }
         }
@@ -339,34 +315,6 @@ public class VideoCallActivity extends AppCompatActivity {
             }
         }
     };
-
-//    private float dX, dY;
-//
-//    private View.OnTouchListener onTouchListener = new View.OnTouchListener() {
-//
-//        @Override
-//        public boolean onTouch(View v, MotionEvent event) {
-//            switch (event.getAction() & MotionEvent.ACTION_MASK) {
-//                case MotionEvent.ACTION_DOWN:
-//                    dX = localSurfaceView.getX() - event.getRawX();
-//                    dY = localSurfaceView.getY() - event.getRawY();
-//                    break;
-//
-//                case MotionEvent.ACTION_MOVE:
-//                    float x = event.getRawX() + dX;
-//                    float y = event.getRawY() + dY;
-//                    v.animate()
-//                            .x(x)
-//                            .y(y)
-//                            .setDuration(0)
-//                            .start();
-//                    break;
-//                default:
-//                    return false;
-//            }
-//            return true;
-//        }
-//    };
 
     private WebRTCClient.OnWebRTCClientListener onWebRTCClientListener = new WebRTCClient.OnWebRTCClientListener() {
 
