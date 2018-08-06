@@ -88,10 +88,14 @@ public class WebRTCClient {
         initSocket();
     }
 
+    public PeerConnectionFactory getPeerConnectionFactory() {
+        return mPeerConnectionFactory;
+    }
+
     public void switchCamera() {
         if (mVideoCapturer != null) {
             CameraVideoCapturer cameraVideoCapturer = (CameraVideoCapturer) mVideoCapturer;
-            cameraVideoCapturer.switchCamera(null);
+            cameraVideoCapturer.switchCamera(cameraSwitchHandler);
         }
     }
 
@@ -145,10 +149,6 @@ public class WebRTCClient {
             mPeerConnectionFactory.dispose();
             mPeerConnectionFactory = null;
         }
-    }
-
-    public PeerConnectionFactory getPeerConnectionFactory() {
-        return mPeerConnectionFactory;
     }
 
     private void initSocket() {
@@ -493,6 +493,18 @@ public class WebRTCClient {
 
         @Override
         public void onRenegotiationNeeded() {
+        }
+    };
+
+    private CameraVideoCapturer.CameraSwitchHandler cameraSwitchHandler = new CameraVideoCapturer.CameraSwitchHandler() {
+        @Override
+        public void onCameraSwitchDone(boolean b) {
+            Log.i(TAG, "onCameraSwitchDone: " + b);
+        }
+
+        @Override
+        public void onCameraSwitchError(String s) {
+            Log.e(TAG, "onCameraSwitchDone: " + s);
         }
     };
 
