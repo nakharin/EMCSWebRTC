@@ -119,11 +119,11 @@ public class VideoCallActivity extends AppCompatActivity {
     private void initSurfaceViews() {
         rootEglBase = EglBase.create();
 
-        remoteSurfaceView.init(rootEglBase.getEglBaseContext(), null);
+        remoteSurfaceView.init(rootEglBase.getEglBaseContext(), new CustomRendererEvents("remote"));
         remoteSurfaceView.setEnableHardwareScaler(true);
         remoteSurfaceView.setMirror(true);
 
-        localSurfaceView.init(rootEglBase.getEglBaseContext(), null);
+        localSurfaceView.init(rootEglBase.getEglBaseContext(), new CustomRendererEvents("local"));
         localSurfaceView.setEnableHardwareScaler(true);
         localSurfaceView.setMirror(true);
     }
