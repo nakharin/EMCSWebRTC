@@ -41,7 +41,7 @@ public class WebRTCClient {
 
     private final static String TAG = WebRTCClient.class.getCanonicalName();
 
-    private final static String BASE_URL = "http://10.2.2.82:3060/";
+    private final static String BASE_URL = "http://10.1.1.93:3060/";
 
     private static final int VIDEO_RESOLUTION_WIDTH = 1280;
     private static final int VIDEO_RESOLUTION_HEIGHT = 720;
