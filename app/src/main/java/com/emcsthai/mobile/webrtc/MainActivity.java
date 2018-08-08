@@ -6,7 +6,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
@@ -24,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
         initWidgets();
 
         btnJoin.setOnClickListener(onClickListener);
+        edtRoomId.setOnEditorActionListener(onEditorActionListener);
     }
 
     private void initWidgets() {
@@ -36,18 +40,29 @@ public class MainActivity extends AppCompatActivity {
         btnJoin = findViewById(R.id.btnJoin);
     }
 
+    private void checkJoinRoom() {
+        String roomId = edtRoomId.getText().toString();
+        if (!roomId.equals("")) {
+            Intent intent = new Intent(getApplicationContext(), VideoCallActivity.class);
+            intent.putExtra(KEY_ROOM_ID, roomId);
+            startActivity(intent);
+
+        } else {
+            Toast.makeText(this, "Please Input Room ID", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private View.OnClickListener onClickListener = v -> {
         if (v == btnJoin) {
-
-            String roomId = edtRoomId.getText().toString();
-            if (!roomId.equals("")) {
-                Intent intent = new Intent(getApplicationContext(), VideoCallActivity.class);
-                intent.putExtra(KEY_ROOM_ID, roomId);
-                startActivity(intent);
-
-            } else {
-                Toast.makeText(this, "Please Input Room ID", Toast.LENGTH_SHORT).show();
-            }
+            checkJoinRoom();
         }
+    };
+
+    private TextView.OnEditorActionListener onEditorActionListener = (v, actionId, event) -> {
+        if (actionId == EditorInfo.IME_ACTION_DONE) {
+            checkJoinRoom();
+            return true;
+        }
+        return false;
     };
 }
