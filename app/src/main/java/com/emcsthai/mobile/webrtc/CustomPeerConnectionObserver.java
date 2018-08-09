@@ -21,7 +21,7 @@ class CustomPeerConnectionObserver implements PeerConnection.Observer {
 
     CustomPeerConnectionObserver(String logTag) {
         this.tag = this.getClass().getCanonicalName();
-        this.tag = this.tag + " " + logTag;
+        this.tag = this.tag + " -> " + logTag;
     }
 
     @Override

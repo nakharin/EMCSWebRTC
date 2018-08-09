@@ -10,13 +10,13 @@ class CustomRendererEvents implements RendererCommon.RendererEvents {
 
     CustomRendererEvents(String logTag) {
         tag = this.getClass().getCanonicalName();
-        this.tag = this.tag + " " + logTag;
+        this.tag = this.tag + " -> " + logTag;
     }
 
 
     @Override
     public void onFirstFrameRendered() {
-        Log.d(tag, "onFirstFrameRendered() called");
+        Log.i(tag, "onFirstFrameRendered() called");
     }
 
     @Override
