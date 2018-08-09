@@ -42,6 +42,7 @@ public class WebRTCClient {
     private final static String TAG = WebRTCClient.class.getCanonicalName();
 
     private final static String BASE_URL = "https://inspect.emcsthai.com";
+    private final static String PATH = "/socket/socket.io";
 
     private static final int VIDEO_RESOLUTION_WIDTH = 1280;
     private static final int VIDEO_RESOLUTION_HEIGHT = 720;
@@ -155,10 +156,10 @@ public class WebRTCClient {
         Log.i(TAG, "initSocket");
         try {
 
-            IO.Options options = new IO.Options();
-            options.path = "/socket/socket.io";
+            IO.Options opts = new IO.Options();
+            opts.path = PATH;
 
-            mSocket = IO.socket(BASE_URL, options);
+            mSocket = IO.socket(BASE_URL, opts);
 
             mSocket.on(EVENT_CONNECT, args -> {
                 Log.i(TAG, "event_connect = " + Arrays.toString(args));
