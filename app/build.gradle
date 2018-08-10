@@ -41,6 +41,10 @@ dependencies {
         exclude group: 'org.json', module: 'json'
     }
 
+    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+
     implementation 'com.android.support:percent:27.1.1'
     implementation 'com.afollestad.material-dialogs:commons:0.9.6.0'
 }

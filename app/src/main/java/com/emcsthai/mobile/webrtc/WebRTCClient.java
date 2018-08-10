@@ -1,5 +1,6 @@
 package com.emcsthai.mobile.webrtc;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
@@ -27,11 +28,21 @@ import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
+
 import io.socket.client.IO;
 import io.socket.client.Socket;
+import okhttp3.OkHttpClient;
 
 import static io.socket.client.Socket.EVENT_CONNECT;
 import static io.socket.client.Socket.EVENT_DISCONNECT;
@@ -156,11 +167,42 @@ public class WebRTCClient {
         }
     }
 
+    private X509TrustManager x509TrustManager = new X509TrustManager() {
+        @SuppressLint("TrustAllX509TrustManager")
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+
+        }
+
+        @SuppressLint("TrustAllX509TrustManager")
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new java.security.cert.X509Certificate[]{};
+        }
+    };
+
     private void initSocket() {
         Log.i(TAG, "initSocket");
         try {
 
+            SSLContext sslcontext = SSLContext.getInstance("TLS");
+            sslcontext.init(null, new javax.net.ssl.TrustManager[]{x509TrustManager}, new SecureRandom());
+
+            HostnameVerifier hostnameVerifier = (hostname, session) -> true;
+
+            OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .hostnameVerifier(hostnameVerifier)
+                    .sslSocketFactory(sslcontext.getSocketFactory(), x509TrustManager)
+                    .build();
+
             IO.Options opts = new IO.Options();
+            opts.callFactory = okHttpClient;
+            opts.webSocketFactory = okHttpClient;
             opts.path = PATH;
 
             mSocket = IO.socket(BASE_URL, opts);
@@ -235,6 +277,12 @@ public class WebRTCClient {
         } catch (URISyntaxException e) {
             e.printStackTrace();
             Log.e(TAG, "URISyntaxException = " + e.getLocalizedMessage());
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            Log.e(TAG, "NoSuchAlgorithmException = " + e.getLocalizedMessage());
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+            Log.e(TAG, "KeyManagementException = " + e.getLocalizedMessage());
         }
     }
 
@@ -280,8 +328,13 @@ public class WebRTCClient {
     private void initPeerConnections() {
         Log.i(TAG, "initPeerConnections");
         ArrayList<PeerConnection.IceServer> iceServers = new ArrayList<>();
+
         iceServers.add(PeerConnection.IceServer.builder("stun:23.21.150.121").createIceServer());
         iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("turn:numb.viagenie.ca")
+                .setUsername("kiraz_coe@hotmail.com")
+                .setPassword("aa")
+                .createIceServer());
 
         mPeerConnection = mPeerConnectionFactory.createPeerConnection(iceServers, customPeerConnectionObserver);
     }
