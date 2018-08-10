@@ -38,10 +38,6 @@
             android:name=".VideoCallActivity"
             android:screenOrientation="portrait" />
 
-        <activity
-            android:name=".TestConstraintLayout"
-            android:screenOrientation="portrait" />
-
     </application>
 
 </manifest>

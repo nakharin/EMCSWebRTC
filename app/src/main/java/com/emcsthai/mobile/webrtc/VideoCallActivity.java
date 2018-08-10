@@ -3,16 +3,15 @@ package com.emcsthai.mobile.webrtc;
 import android.Manifest;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.percent.PercentFrameLayout;
-import android.support.percent.PercentLayoutHelper;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.ConstraintSet;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
-import android.view.Gravity;
+import android.transition.TransitionManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -35,7 +34,11 @@ public class VideoCallActivity extends AppCompatActivity {
 
     private EglBase rootEglBase;
 
-    private RelativeLayout rootLayout;
+    private ConstraintSet consSetHalf = new ConstraintSet();
+    private ConstraintSet consSetLocal = new ConstraintSet();
+    private ConstraintSet consSetRemote = new ConstraintSet();
+
+    private ConstraintLayout rootLayout;
     private ImageView imgScreenType;
 
     private SurfaceViewRenderer remoteSurfaceView;
@@ -54,9 +57,11 @@ public class VideoCallActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_video_call);
+        setContentView(R.layout.activity_video_call_remote_screen);
 
         initWidgets();
+
+        initConstraintSet();
 
         if (getIntent().hasExtra(MainActivity.KEY_ROOM_ID)) {
             roomId = getIntent().getStringExtra(MainActivity.KEY_ROOM_ID);
@@ -128,60 +133,10 @@ public class VideoCallActivity extends AppCompatActivity {
         localSurfaceView.setMirror(true);
     }
 
-    private void updateResetVideoView() {
-        runOnUiThread(() -> {
-            PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) remoteSurfaceView.getLayoutParams();
-            params.gravity = -1;
-            PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
-            info.heightPercent = 1.00f;
-            info.widthPercent = 1.00f;
-            info.leftMarginPercent = 0.00f;
-            info.topMarginPercent = 0.00f;
-            remoteSurfaceView.requestLayout();
-
-            params = (PercentFrameLayout.LayoutParams) localSurfaceView.getLayoutParams();
-            params.gravity = -1;
-            info = params.getPercentLayoutInfo();
-            info.heightPercent = 1.00f;
-            info.widthPercent = 1.00f;
-            info.leftMarginPercent = 0.00f;
-            info.topMarginPercent = 0.00f;
-            localSurfaceView.requestLayout();
-        });
-    }
-
-    private void updateLocalSmallVideoView() {
-        // Method from this class
-        updateResetVideoView();
-        runOnUiThread(() -> {
-            PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) localSurfaceView.getLayoutParams();
-            PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
-            info.heightPercent = 0.30f;
-            info.widthPercent = 0.35f;
-            info.leftMarginPercent = 0.60f;
-            info.topMarginPercent = 0.65f;
-
-            windowType = WINDOW_TYPE.LOCAL_SMALL;
-
-            sendViewToBack(remoteSurfaceView);
-        });
-    }
-
-    private void updateRemoteSmallVideoView() {
-        // Method from this class
-        updateResetVideoView();
-        runOnUiThread(() -> {
-            PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) remoteSurfaceView.getLayoutParams();
-            PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
-            info.heightPercent = 0.30f;
-            info.widthPercent = 0.35f;
-            info.leftMarginPercent = 0.60f;
-            info.topMarginPercent = 0.65f;
-
-            windowType = WINDOW_TYPE.REMOTE_SMALL;
-
-            sendViewToBack(localSurfaceView);
-        });
+    private void initConstraintSet() {
+        consSetRemote.clone(rootLayout);
+        consSetLocal.load(this, R.layout.activity_video_call_local_screen);
+        consSetHalf.load(this, R.layout.activity_video_call_half_screen);
     }
 
     private void sendViewToBack(@NonNull View child) {
@@ -193,28 +148,20 @@ public class VideoCallActivity extends AppCompatActivity {
     }
 
     private void updateSplitHalfVideoView() {
-        // Method from this class
-        updateResetVideoView();
-        runOnUiThread(() -> {
-            PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams) remoteSurfaceView.getLayoutParams();
-            PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
-            info.heightPercent = 0.50f;
-            info.widthPercent = 1.00f;
-            info.leftMarginPercent = 0.00f;
-            info.topMarginPercent = 0.00f;
-            remoteSurfaceView.requestLayout();
+        consSetHalf.applyTo(rootLayout);
+        windowType = WINDOW_TYPE.LOCAL_SMALL;
+    }
 
-            params = (PercentFrameLayout.LayoutParams) localSurfaceView.getLayoutParams();
-            params.gravity = Gravity.BOTTOM;
-            info = params.getPercentLayoutInfo();
-            info.heightPercent = 0.50f;
-            info.widthPercent = 1.00f;
-            info.leftMarginPercent = 0.00f;
-            info.topMarginPercent = 0.00f;
-            localSurfaceView.requestLayout();
+    private void updateLocalSmallVideoView() {
+        sendViewToBack(remoteSurfaceView);
+        consSetLocal.applyTo(rootLayout);
+        windowType = WINDOW_TYPE.REMOTE_SMALL;
+    }
 
-            windowType = WINDOW_TYPE.SPLIT_HALF;
-        });
+    private void updateRemoteSmallVideoView() {
+        sendViewToBack(localSurfaceView);
+        consSetRemote.applyTo(rootLayout);
+        windowType = WINDOW_TYPE.SPLIT_HALF;
     }
 
     private void dialogHandUp() {
@@ -283,14 +230,14 @@ public class VideoCallActivity extends AppCompatActivity {
 
         if (v == imgScreenType) {
             switch (windowType) {
-                case LOCAL_SMALL:
-                    updateRemoteSmallVideoView();
-                    break;
-                case REMOTE_SMALL:
+                case SPLIT_HALF:
                     updateSplitHalfVideoView();
                     break;
-                case SPLIT_HALF:
+                case LOCAL_SMALL:
                     updateLocalSmallVideoView();
+                    break;
+                case REMOTE_SMALL:
+                    updateRemoteSmallVideoView();
                     break;
             }
         }
@@ -332,6 +279,7 @@ public class VideoCallActivity extends AppCompatActivity {
                     }
                 }
             };
+
             videoTrack.addSink(videoSink);
         }
 
@@ -351,8 +299,10 @@ public class VideoCallActivity extends AppCompatActivity {
 
             videoTrack.addSink(videoSink);
 
-            // Method from this class
-            updateLocalSmallVideoView();
+            runOnUiThread(() -> {
+                TransitionManager.beginDelayedTransition(rootLayout);
+                updateLocalSmallVideoView();
+            });
         }
 
         @Override

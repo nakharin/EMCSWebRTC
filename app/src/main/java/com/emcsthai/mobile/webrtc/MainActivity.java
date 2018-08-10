@@ -8,7 +8,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.Toolbar;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
@@ -66,10 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
     private View.OnClickListener onClickListener = v -> {
         if (v == btnJoin) {
-//            checkJoinRoom();
-
-            Intent intent = new Intent(getApplicationContext(), TestConstraintLayout.class);
-            startActivity(intent);
+            checkJoinRoom();
         }
     };
 
