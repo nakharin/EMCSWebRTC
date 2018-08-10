@@ -5,15 +5,13 @@ import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v7.app.AppCompatActivity;
-import android.transition.TransitionManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 public class TestConstraintLayout extends AppCompatActivity {
 
-    private ConstraintLayout rootConstraintLayout;
+    private ConstraintLayout rootLayout;
 
     private ImageView imgScreenType;
 
@@ -29,7 +27,7 @@ public class TestConstraintLayout extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_half_constraint_layout);
+        setContentView(R.layout.activity_remote_small_constraint_layout);
 
         initWidgets();
 
@@ -40,7 +38,7 @@ public class TestConstraintLayout extends AppCompatActivity {
 
     private void initWidgets() {
 
-        rootConstraintLayout = findViewById(R.id.rootConstraintLayout);
+        rootLayout = findViewById(R.id.rootLayout);
 
         imgScreenType = findViewById(R.id.imgScreenType);
 
@@ -49,9 +47,9 @@ public class TestConstraintLayout extends AppCompatActivity {
     }
 
     private void initConstraintSet() {
-        consSetHalf.clone(rootConstraintLayout);
+        consSetRemote.clone(rootLayout);
         consSetLocal.load(this, R.layout.activity_local_small_constraint_layout);
-        consSetRemote.load(this, R.layout.activity_remote_small_constraint_layout);
+        consSetHalf.load(this, R.layout.activity_half_constraint_layout);
     }
 
     private void sendViewToBack(@NonNull View child) {
@@ -62,42 +60,30 @@ public class TestConstraintLayout extends AppCompatActivity {
         }
     }
 
-    private void setHalfScreen() {
-        Toast.makeText(TestConstraintLayout.this, "setHalf", Toast.LENGTH_SHORT).show();
-        consSetHalf.applyTo(rootConstraintLayout);
-    }
-
-    private void setLocalSmall() {
-        Toast.makeText(TestConstraintLayout.this, "setLocalSmall", Toast.LENGTH_SHORT).show();
-        sendViewToBack(remoteSurfaceView);
-        consSetLocal.applyTo(rootConstraintLayout);
-    }
-
-    private void setRemoteSmall() {
-        Toast.makeText(TestConstraintLayout.this, "setRemoteSmall", Toast.LENGTH_SHORT).show();
-        sendViewToBack(localSurfaceView);
-        consSetRemote.applyTo(rootConstraintLayout);
-    }
-
     private final View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
 
             if (v == imgScreenType) {
 
+                /**
+                 * Enable DelayedTransition
+                 */
 //                TransitionManager.beginDelayedTransition(rootConstraintLayout);
 
                 switch (type) {
                     case 0:
-                        setHalfScreen();
+                        consSetHalf.applyTo(rootLayout);
                         type = 1;
                         break;
                     case 1:
-                        setLocalSmall();
+                        sendViewToBack(remoteSurfaceView);
+                        consSetLocal.applyTo(rootLayout);
                         type = 2;
                         break;
                     case 2:
-                        setRemoteSmall();
+                        sendViewToBack(localSurfaceView);
+                        consSetRemote.applyTo(rootLayout);
                         type = 0;
                         break;
                 }
