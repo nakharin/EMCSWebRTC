@@ -66,7 +66,10 @@ public class MainActivity extends AppCompatActivity {
 
     private View.OnClickListener onClickListener = v -> {
         if (v == btnJoin) {
-            checkJoinRoom();
+//            checkJoinRoom();
+
+            Intent intent = new Intent(getApplicationContext(), TestConstraintLayout.class);
+            startActivity(intent);
         }
     };
 
