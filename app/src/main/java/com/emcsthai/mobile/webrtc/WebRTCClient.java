@@ -110,7 +110,11 @@ public class WebRTCClient {
 
     public void disconnect() {
         if (mSocket != null) {
-            mSocket.emit("message", "bye");
+            try {
+                emitMessage(mRoomId, "bye", null);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             close();
         }
     }
