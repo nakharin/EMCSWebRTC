@@ -1,11 +1,13 @@
 package com.emcsthai.mobile.webrtc;
 
 import android.Manifest;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.transition.TransitionManager;
@@ -150,18 +152,35 @@ public class VideoCallActivity extends AppCompatActivity {
     private void updateSplitHalfVideoView() {
         consSetHalf.applyTo(rootLayout);
         windowType = WINDOW_TYPE.LOCAL_SMALL;
+
+        localSurfaceView.setZOrderOnTop(false);
+        remoteSurfaceView.setZOrderOnTop(false);
     }
 
     private void updateLocalSmallVideoView() {
-        sendViewToBack(remoteSurfaceView);
         consSetLocal.applyTo(rootLayout);
         windowType = WINDOW_TYPE.REMOTE_SMALL;
+
+        if (android.os.Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1) {
+            sendViewToBack(remoteSurfaceView);
+        } else {
+            remoteSurfaceView.setZOrderOnTop(false);
+            localSurfaceView.setZOrderOnTop(true);
+            localSurfaceView.setZOrderMediaOverlay(true);
+        }
     }
 
     private void updateRemoteSmallVideoView() {
-        sendViewToBack(localSurfaceView);
         consSetRemote.applyTo(rootLayout);
         windowType = WINDOW_TYPE.SPLIT_HALF;
+
+        if (android.os.Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1) {
+            sendViewToBack(localSurfaceView);
+        } else {
+            localSurfaceView.setZOrderOnTop(false);
+            remoteSurfaceView.setZOrderOnTop(true);
+            remoteSurfaceView.setZOrderMediaOverlay(true);
+        }
     }
 
     private void dialogHandUp() {

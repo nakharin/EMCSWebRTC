@@ -4,8 +4,8 @@
     android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".VideoCallActivity"
-    android:background="#55000000">
+    android:background="@color/colorBlack"
+    tools:context=".VideoCallActivity">
 
     <org.webrtc.SurfaceViewRenderer
         android:id="@+id/localSurfaceView"
