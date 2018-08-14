@@ -68,6 +68,10 @@ public class WebRTCClient {
 
     private VideoTrack mLocalVideoTrack;
     private AudioTrack mLocalAudioTrack;
+
+    private VideoSource mVideoSource;
+    private AudioSource mAudioSource;
+
     private VideoCapturer mVideoCapturer;
 
     private OnWebRTCClientListener mOnWebRTCClientListener;
@@ -137,6 +141,30 @@ public class WebRTCClient {
             mSocket.close();
         }
 
+        if (mOnWebRTCClientListener != null) {
+            mOnWebRTCClientListener = null;
+        }
+
+        if (mVideoSource != null) {
+            mVideoSource.dispose();
+            mVideoSource = null;
+        }
+
+        if (mAudioSource != null) {
+            mAudioSource.dispose();
+            mAudioSource = null;
+        }
+
+        if (mVideoCapturer != null) {
+            try {
+                mVideoCapturer.stopCapture();
+                mVideoCapturer.dispose();
+                mVideoCapturer = null;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
         if (mLocalVideoTrack != null) {
             mLocalVideoTrack.dispose();
             mLocalVideoTrack = null;
@@ -145,15 +173,6 @@ public class WebRTCClient {
         if (mLocalAudioTrack != null) {
             mLocalAudioTrack.dispose();
             mLocalAudioTrack = null;
-        }
-
-        if (mVideoCapturer != null) {
-            mVideoCapturer.dispose();
-            mVideoCapturer = null;
-        }
-
-        if (mOnWebRTCClientListener != null) {
-            mOnWebRTCClientListener = null;
         }
 
         if (mPeerConnection != null) {
@@ -314,14 +333,14 @@ public class WebRTCClient {
         Log.i(TAG, "createVideoTrackFromCameraAndShowIt");
         //Now create a VideoCapturer instance.
         mVideoCapturer = createVideoCapturer();
-        VideoSource videoSource = mPeerConnectionFactory.createVideoSource(mVideoCapturer);
+        mVideoSource = mPeerConnectionFactory.createVideoSource(mVideoCapturer);
         mVideoCapturer.startCapture(VIDEO_RESOLUTION_WIDTH, VIDEO_RESOLUTION_HEIGHT, FPS);
 
-        AudioSource audioSource = mPeerConnectionFactory.createAudioSource(mMediaConstraints);
-        mLocalAudioTrack = mPeerConnectionFactory.createAudioTrack(AUDIO_TRACK_ID, audioSource);
+        mAudioSource = mPeerConnectionFactory.createAudioSource(mMediaConstraints);
+        mLocalAudioTrack = mPeerConnectionFactory.createAudioTrack(AUDIO_TRACK_ID, mAudioSource);
         mLocalAudioTrack.setEnabled(true);
 
-        mLocalVideoTrack = mPeerConnectionFactory.createVideoTrack(VIDEO_TRACK_ID, videoSource);
+        mLocalVideoTrack = mPeerConnectionFactory.createVideoTrack(VIDEO_TRACK_ID, mVideoSource);
         mLocalVideoTrack.setEnabled(true);
     }
 
