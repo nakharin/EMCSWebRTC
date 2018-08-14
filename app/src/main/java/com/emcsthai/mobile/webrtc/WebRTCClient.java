@@ -328,12 +328,12 @@ public class WebRTCClient {
     private void initPeerConnections() {
         Log.i(TAG, "initPeerConnections");
         ArrayList<PeerConnection.IceServer> iceServers = new ArrayList<>();
+//        iceServers.add(PeerConnection.IceServer.builder("stun:23.21.150.121").createIceServer());
+//        iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
 
-        iceServers.add(PeerConnection.IceServer.builder("stun:23.21.150.121").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("turn:numb.viagenie.ca")
-                .setUsername("kiraz_coe@hotmail.com")
-                .setPassword("aa")
+        iceServers.add(PeerConnection.IceServer.builder("turn:13.250.13.83:3478?transport=udp")
+                .setUsername("YzYNCouZM1mhqhmseWk6")
+                .setPassword("YzYNCouZM1mhqhmseWk6")
                 .createIceServer());
 
         mPeerConnection = mPeerConnectionFactory.createPeerConnection(iceServers, customPeerConnectionObserver);
