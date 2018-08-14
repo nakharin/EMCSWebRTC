@@ -200,6 +200,11 @@ public class VideoCallActivity extends AppCompatActivity {
     }
 
     private void handUp() {
+
+        runOnUiThread(() -> {
+            Toast.makeText(getApplicationContext(), "Video Call ended", Toast.LENGTH_SHORT).show();
+        });
+
         if (localSurfaceView != null) {
             localSurfaceView.release();
             localSurfaceView = null;
