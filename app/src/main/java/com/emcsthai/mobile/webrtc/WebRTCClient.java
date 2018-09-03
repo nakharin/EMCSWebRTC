@@ -293,6 +293,12 @@ public class WebRTCClient {
                     e.printStackTrace();
                 }
 
+            }).on("capture", args -> {
+                JSONObject data = (JSONObject) args[0];
+                if (mOnWebRTCClientListener != null) {
+                    mOnWebRTCClientListener.onReceiveImage(data.toString());
+                }
+
             }).on("full", args -> {
                 Log.i(TAG, "event_full : " + Arrays.toString(args));
 
@@ -608,11 +614,9 @@ public class WebRTCClient {
 
     public interface OnWebRTCClientListener {
         void onCallReady(String callId);
-
         void onLocalStream(MediaStream mediaStream);
-
         void onRemoteStream(MediaStream mediaStream);
-
+        void onReceiveImage(String image);
         void onHangUp();
     }
 }

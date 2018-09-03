@@ -10,12 +10,15 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.transition.TransitionManager;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.emcsthai.mobile.webrtc.model.ImageCapture;
+import com.google.gson.Gson;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -29,8 +32,6 @@ import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoSink;
 import org.webrtc.VideoTrack;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class VideoCallActivity extends AppCompatActivity {
@@ -343,6 +344,16 @@ public class VideoCallActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 TransitionManager.beginDelayedTransition(rootLayout);
                 updateLocalSmallVideoView();
+            });
+        }
+
+        @Override
+        public void onReceiveImage(String image) {
+            runOnUiThread(() -> {
+                ImageCapture imageCapture = new Gson().fromJson(image, ImageCapture.class);
+                String data = imageCapture.getData();
+                DialogViewPhoto dialog = DialogViewPhoto.Companion.newInstance(data, false);
+                dialog.show(getSupportFragmentManager(), "dialog");
             });
         }
 
