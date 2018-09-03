@@ -7,7 +7,6 @@ import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.transition.TransitionManager;
@@ -30,6 +29,8 @@ import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoSink;
 import org.webrtc.VideoTrack;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class VideoCallActivity extends AppCompatActivity {
@@ -105,6 +106,22 @@ public class VideoCallActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        webRTCClient.startPreview();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        try {
+            webRTCClient.stopPreview();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void onBackPressed() {
         dialogHandUp();
     }
@@ -128,11 +145,11 @@ public class VideoCallActivity extends AppCompatActivity {
 
         remoteSurfaceView.init(rootEglBase.getEglBaseContext(), new CustomRendererEvents("remote"));
         remoteSurfaceView.setEnableHardwareScaler(true);
-        remoteSurfaceView.setMirror(true);
+        remoteSurfaceView.setMirror(false);
 
         localSurfaceView.init(rootEglBase.getEglBaseContext(), new CustomRendererEvents("local"));
         localSurfaceView.setEnableHardwareScaler(true);
-        localSurfaceView.setMirror(true);
+        localSurfaceView.setMirror(false);
     }
 
     private void initConstraintSet() {
@@ -310,7 +327,7 @@ public class VideoCallActivity extends AppCompatActivity {
         @Override
         public void onRemoteStream(MediaStream mediaStream) {
             AudioTrack audioTrack = mediaStream.audioTracks.get(0);
-            audioTrack.setVolume(10);
+//            audioTrack.setVolume(100);
 
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             VideoSink videoSink = videoFrame -> {

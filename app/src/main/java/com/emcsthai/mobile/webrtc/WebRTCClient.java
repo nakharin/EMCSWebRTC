@@ -134,6 +134,19 @@ public class WebRTCClient {
         }
     }
 
+    public void startPreview() {
+//        // Method from this class
+//        startStreamingVideo();
+    }
+
+    public void stopPreview() {
+//        try {
+//            mVideoCapturer.stopCapture();
+//        } catch (NullPointerException| InterruptedException e) {
+//            e.printStackTrace();
+//        }
+    }
+
     private void close() {
 
         if (mSocket != null) {
@@ -155,15 +168,15 @@ public class WebRTCClient {
             mAudioSource = null;
         }
 
-        if (mVideoCapturer != null) {
-            try {
-                mVideoCapturer.stopCapture();
-                mVideoCapturer.dispose();
-                mVideoCapturer = null;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+//        if (mVideoCapturer != null) {
+//            try {
+//                mVideoCapturer.stopCapture();
+//                mVideoCapturer.dispose();
+//                mVideoCapturer = null;
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
         if (mLocalVideoTrack != null) {
             mLocalVideoTrack.dispose();
@@ -180,10 +193,10 @@ public class WebRTCClient {
             mPeerConnection = null;
         }
 
-        if (mPeerConnectionFactory != null) {
-            mPeerConnectionFactory.dispose();
-            mPeerConnectionFactory = null;
-        }
+//        if (mPeerConnectionFactory != null) {
+//            mPeerConnectionFactory.dispose();
+//            mPeerConnectionFactory = null;
+//        }
     }
 
     private X509TrustManager x509TrustManager = new X509TrustManager() {
