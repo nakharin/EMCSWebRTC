@@ -79,7 +79,7 @@ public class VideoCallActivity extends AppCompatActivity {
                                 // Method from this class
                                 initSurfaceViews();
 
-                                webRTCClient = new WebRTCClient(getApplicationContext(), roomId, rootEglBase, onWebRTCClientListener);
+                                webRTCClient = new WebRTCClient(VideoCallActivity.this, roomId, rootEglBase, onWebRTCClientListener);
                             }
 
                             if (report.isAnyPermissionPermanentlyDenied()) {

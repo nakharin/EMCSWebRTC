@@ -1,7 +1,9 @@
 package com.emcsthai.mobile.webrtc;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -125,11 +127,10 @@ public class WebRTCClient {
 
     public void disconnect() {
         if (mSocket != null) {
-            try {
-                emitMessage(mRoomId, "bye", null);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            // Method from this class
+            emitMessage(mRoomId, "bye", null);
+
+            // Method from this class
             close();
         }
     }
@@ -249,17 +250,17 @@ public class WebRTCClient {
                     mOnWebRTCClientListener.onCallReady(mCallId);
                 }
 
+                // Method from this class
                 emitJoin(mRoomId);
+
+                // Method from this class
+                emitScreenSize(mRoomId);
 
             }).on("joined", args -> {
                 mRoomId = (String) args[0];
                 Log.i(TAG, "event_joined : " + Arrays.toString(args));
-                try {
-
-                    emitMessage(mRoomId, "ready", null);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                // Method from this class
+                emitMessage(mRoomId, "ready", null);
 
             }).on(EVENT_MESSAGE, args -> {
                 Log.i(TAG, "event_message : " + Arrays.toString(args));
@@ -398,6 +399,7 @@ public class WebRTCClient {
                     JSONObject payload = new JSONObject();
                     payload.put("type", sessionDescription.type.canonicalForm());
                     payload.put("sdp", sessionDescription.description);
+                    // Method from this class
                     emitMessage(mRoomId, sessionDescription.type.canonicalForm(), payload);
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -429,6 +431,7 @@ public class WebRTCClient {
                     JSONObject payload = new JSONObject();
                     payload.put("type", sessionDescription.type.canonicalForm());
                     payload.put("sdp", sessionDescription.description);
+                    // Method from this class
                     emitMessage(mRoomId, sessionDescription.type.canonicalForm(), payload);
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -517,12 +520,37 @@ public class WebRTCClient {
         Log.d(TAG, "emit_join : " + roomName);
     }
 
-    private void emitMessage(String roomId, String type, JSONObject payload) throws JSONException {
+    private void emitScreenSize(String roomId) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        ((Activity) mContext).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
+
         JSONObject message = new JSONObject();
-        message.put("os", "mobile");
-        message.put("to", roomId);
-        message.put("type", type);
-        message.put("payload", payload);
+        try {
+            message.put("os", "mobile");
+            message.put("to", roomId);
+            message.put("height", height);
+            message.put("width", width);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        mSocket.emit("screen", message);
+        Log.d(TAG, "emit_screen : " + message);
+    }
+
+    private void emitMessage(String roomId, String type, JSONObject payload) {
+        JSONObject message = new JSONObject();
+        try {
+            message.put("os", "mobile");
+            message.put("to", roomId);
+            message.put("type", type);
+            message.put("payload", payload);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         mSocket.emit("message", message);
         Log.d(TAG, "emit_message : " + message);
     }
@@ -563,6 +591,7 @@ public class WebRTCClient {
                 payload.put("label", iceCandidate.sdpMLineIndex);
                 payload.put("id", iceCandidate.sdpMid);
                 payload.put("candidate", iceCandidate.sdp);
+                // Method from this class
                 emitMessage(mRoomId, "candidate", payload);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -614,9 +643,13 @@ public class WebRTCClient {
 
     public interface OnWebRTCClientListener {
         void onCallReady(String callId);
+
         void onLocalStream(MediaStream mediaStream);
+
         void onRemoteStream(MediaStream mediaStream);
+
         void onReceiveImage(String image);
+
         void onHangUp();
     }
 }
