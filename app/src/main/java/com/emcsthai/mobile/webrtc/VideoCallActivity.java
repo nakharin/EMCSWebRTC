@@ -109,16 +109,16 @@ public class VideoCallActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        webRTCClient.startPreview();
+        if (webRTCClient != null) {
+            webRTCClient.startPreview();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        try {
+        if (webRTCClient != null) {
             webRTCClient.stopPreview();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
         }
     }
 
