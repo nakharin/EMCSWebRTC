@@ -1,6 +1,7 @@
 package com.emcsthai.mobile.webrtc;
 
 import android.Manifest;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,7 +11,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.transition.TransitionManager;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -313,6 +313,9 @@ public class VideoCallActivity extends AppCompatActivity {
 
         @Override
         public void onLocalStream(MediaStream mediaStream) {
+            AudioTrack audioTrack = mediaStream.audioTracks.get(0);
+            audioTrack.setVolume(AudioManager.STREAM_VOICE_CALL);
+
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             VideoSink videoSink = videoFrame -> {
                 if (videoFrame != null) {
@@ -328,7 +331,7 @@ public class VideoCallActivity extends AppCompatActivity {
         @Override
         public void onRemoteStream(MediaStream mediaStream) {
             AudioTrack audioTrack = mediaStream.audioTracks.get(0);
-//            audioTrack.setVolume(100);
+            audioTrack.setVolume(AudioManager.STREAM_VOICE_CALL);
 
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             VideoSink videoSink = videoFrame -> {
@@ -348,12 +351,10 @@ public class VideoCallActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onReceiveImage(String image) {
+        public void onReceiveImage(ImageCapture imageCapture) {
             runOnUiThread(() -> {
-                ImageCapture imageCapture = new Gson().fromJson(image, ImageCapture.class);
-                String data = imageCapture.getData();
-                DialogViewPhoto dialog = DialogViewPhoto.Companion.newInstance(data, false);
-                dialog.show(getSupportFragmentManager(), "dialog");
+                DialogViewPhoto.Companion.newInstance(imageCapture.getData(), false)
+                        .show(getSupportFragmentManager(), "dialog");
             });
         }
 

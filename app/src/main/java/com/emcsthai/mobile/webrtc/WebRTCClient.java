@@ -7,6 +7,9 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.emcsthai.mobile.webrtc.model.ImageCapture;
+import com.google.gson.Gson;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.AudioSource;
@@ -46,10 +49,6 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import okhttp3.OkHttpClient;
 
-import static io.socket.client.Socket.EVENT_CONNECT;
-import static io.socket.client.Socket.EVENT_DISCONNECT;
-import static io.socket.client.Socket.EVENT_MESSAGE;
-
 public class WebRTCClient {
 
     private final static String TAG = WebRTCClient.class.getCanonicalName();
@@ -87,6 +86,26 @@ public class WebRTCClient {
 
     private String mCallId;
     private String mRoomId;
+
+    private class IOEmit {
+        static final String READY = "ready";
+        static final String BYE = "bye";
+        static final String CANDIDATE = "candidate";
+        static final String JOIN = "join";
+        static final String SCREEN = "screen";
+        static final String MESSAGE = "message";
+    }
+
+    private class IOEvent {
+        static final String CONNECT = "connect";
+        static final String ID = "id";
+        static final String JOINED = "joined";
+        static final String MESSAGE = "message";
+        static final String CAPTURE = "capture";
+        static final String FULL = "full";
+        static final String BYE = "bye";
+        static final String DISCONNECT = "disconnect";
+    }
 
     WebRTCClient(Context context, String roomId, EglBase eglBase, OnWebRTCClientListener onWebRTCClientListener) {
         mContext = context;
@@ -128,7 +147,7 @@ public class WebRTCClient {
     public void disconnect() {
         if (mSocket != null) {
             // Method from this class
-            emitMessage(mRoomId, "bye", null);
+            emitMessage(mRoomId, IOEmit.BYE, null);
 
             // Method from this class
             close();
@@ -141,6 +160,7 @@ public class WebRTCClient {
     }
 
     public void stopPreview() {
+
 //        try {
 //            mVideoCapturer.stopCapture();
 //        } catch (NullPointerException| InterruptedException e) {
@@ -240,10 +260,10 @@ public class WebRTCClient {
 
             mSocket = IO.socket(BASE_URL, opts);
 
-            mSocket.on(EVENT_CONNECT, args -> {
+            mSocket.on(IOEvent.CONNECT, args -> {
                 Log.i(TAG, "event_connect = " + Arrays.toString(args));
 
-            }).on("id", args -> {
+            }).on(IOEvent.ID, args -> {
                 mCallId = (String) args[0];
                 Log.i(TAG, "event_id : " + Arrays.toString(args));
                 if (mOnWebRTCClientListener != null) {
@@ -256,13 +276,13 @@ public class WebRTCClient {
                 // Method from this class
                 emitScreenSize(mRoomId);
 
-            }).on("joined", args -> {
+            }).on(IOEvent.JOINED, args -> {
                 mRoomId = (String) args[0];
                 Log.i(TAG, "event_joined : " + Arrays.toString(args));
                 // Method from this class
-                emitMessage(mRoomId, "ready", null);
+                emitMessage(mRoomId, IOEmit.READY, null);
 
-            }).on(EVENT_MESSAGE, args -> {
+            }).on(IOEvent.MESSAGE, args -> {
                 Log.i(TAG, "event_message : " + Arrays.toString(args));
                 try {
 
@@ -294,22 +314,23 @@ public class WebRTCClient {
                     e.printStackTrace();
                 }
 
-            }).on("capture", args -> {
+            }).on(IOEvent.CAPTURE, args -> {
                 JSONObject data = (JSONObject) args[0];
                 if (mOnWebRTCClientListener != null) {
-                    mOnWebRTCClientListener.onReceiveImage(data.toString());
+                    ImageCapture imageCapture = new Gson().fromJson(data.toString(), ImageCapture.class);
+                    mOnWebRTCClientListener.onReceiveImage(imageCapture);
                 }
 
-            }).on("full", args -> {
+            }).on(IOEvent.FULL, args -> {
                 Log.i(TAG, "event_full : " + Arrays.toString(args));
 
-            }).on("bye", args -> {
+            }).on(IOEvent.BYE, args -> {
                 Log.i(TAG, "event_bye : " + Arrays.toString(args));
                 if (mOnWebRTCClientListener != null) {
                     mOnWebRTCClientListener.onHangUp();
                 }
 
-            }).on(EVENT_DISCONNECT, args -> {
+            }).on(IOEvent.DISCONNECT, args -> {
                 Log.i(TAG, "event_disconnect : " + Arrays.toString(args));
             });
             mSocket.connect();
@@ -516,7 +537,7 @@ public class WebRTCClient {
     }
 
     private void emitJoin(String roomName) {
-        mSocket.emit("join", roomName);
+        mSocket.emit(IOEmit.JOIN, roomName);
         Log.d(TAG, "emit_join : " + roomName);
     }
 
@@ -536,7 +557,7 @@ public class WebRTCClient {
             e.printStackTrace();
         }
 
-        mSocket.emit("screen", message);
+        mSocket.emit(IOEmit.SCREEN, message);
         Log.d(TAG, "emit_screen : " + message);
     }
 
@@ -551,7 +572,7 @@ public class WebRTCClient {
             e.printStackTrace();
         }
 
-        mSocket.emit("message", message);
+        mSocket.emit(IOEmit.MESSAGE, message);
         Log.d(TAG, "emit_message : " + message);
     }
 
@@ -587,12 +608,15 @@ public class WebRTCClient {
             Log.i(TAG, "onIceCandidate");
             mPeerConnection.addIceCandidate(iceCandidate);
             try {
+
+
+
                 JSONObject payload = new JSONObject();
                 payload.put("label", iceCandidate.sdpMLineIndex);
                 payload.put("id", iceCandidate.sdpMid);
                 payload.put("candidate", iceCandidate.sdp);
                 // Method from this class
-                emitMessage(mRoomId, "candidate", payload);
+                emitMessage(mRoomId, IOEmit.CANDIDATE, payload);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -648,7 +672,7 @@ public class WebRTCClient {
 
         void onRemoteStream(MediaStream mediaStream);
 
-        void onReceiveImage(String image);
+        void onReceiveImage(ImageCapture image);
 
         void onHangUp();
     }
