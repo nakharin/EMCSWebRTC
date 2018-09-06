@@ -18,6 +18,7 @@ import org.webrtc.Camera1Enumerator;
 import org.webrtc.Camera2Enumerator;
 import org.webrtc.CameraEnumerator;
 import org.webrtc.CameraVideoCapturer;
+import org.webrtc.CapturerObserver;
 import org.webrtc.DataChannel;
 import org.webrtc.DefaultVideoDecoderFactory;
 import org.webrtc.DefaultVideoEncoderFactory;
@@ -28,6 +29,7 @@ import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.SessionDescription;
+import org.webrtc.SurfaceTextureHelper;
 import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
@@ -75,6 +77,8 @@ public class WebRTCClient {
     private AudioSource mAudioSource;
 
     private VideoCapturer mVideoCapturer;
+
+    private CapturerObserver mCapturerObserver;
 
     private OnWebRTCClientListener mOnWebRTCClientListener;
 
@@ -156,17 +160,15 @@ public class WebRTCClient {
     }
 
     public void startPreview() {
-//        // Method from this class
-//        startStreamingVideo();
+        if (mCapturerObserver != null) {
+            mCapturerObserver.onCapturerStarted(mVideoCapturer.isScreencast());
+        }
     }
 
     public void stopPreview() {
-
-//        try {
-//            mVideoCapturer.stopCapture();
-//        } catch (NullPointerException| InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        if (mCapturerObserver != null) {
+            mCapturerObserver.onCapturerStopped();
+        }
     }
 
     private void close() {
@@ -190,16 +192,6 @@ public class WebRTCClient {
             mAudioSource = null;
         }
 
-//        if (mVideoCapturer != null) {
-//            try {
-//                mVideoCapturer.stopCapture();
-//                mVideoCapturer.dispose();
-//                mVideoCapturer = null;
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
         if (mLocalVideoTrack != null) {
             mLocalVideoTrack.dispose();
             mLocalVideoTrack = null;
@@ -214,11 +206,6 @@ public class WebRTCClient {
             mPeerConnection.close();
             mPeerConnection = null;
         }
-
-//        if (mPeerConnectionFactory != null) {
-//            mPeerConnectionFactory.dispose();
-//            mPeerConnectionFactory = null;
-//        }
     }
 
     private X509TrustManager x509TrustManager = new X509TrustManager() {
@@ -352,7 +339,6 @@ public class WebRTCClient {
         //Initialize PeerConnectionFactory globals.
         PeerConnectionFactory.InitializationOptions initializationOptions =
                 PeerConnectionFactory.InitializationOptions.builder(mContext)
-//                        .setEnableVideoHwAcceleration(true)
                         .createInitializationOptions();
         PeerConnectionFactory.initialize(initializationOptions);
 
@@ -390,17 +376,17 @@ public class WebRTCClient {
                 .setVideoDecoderFactory(defaultVideoDecoderFactory)
                 .setAudioDeviceModule(audioDeviceModule)
                 .createPeerConnectionFactory();
-
-
-//        mPeerConnectionFactory.setVideoHwAccelerationOptions(mEglBase.getEglBaseContext(), mEglBase.getEglBaseContext());
     }
 
     private void createVideoTrackFromCameraAndShowIt() {
         Log.i(TAG, "createVideoTrackFromCameraAndShowIt");
         // Now create a VideoCapturer instance.
         mVideoCapturer = createVideoCapturer();
+
         mVideoSource = mPeerConnectionFactory.createVideoSource(mVideoCapturer.isScreencast());
-//        mVideoSource = mPeerConnectionFactory.createVideoSource(mVideoCapturer);
+        SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("VideoCapturerThread", mEglBase.getEglBaseContext());
+        mCapturerObserver = mVideoSource.getCapturerObserver();
+        mVideoCapturer.initialize(surfaceTextureHelper, mContext, mCapturerObserver);
         mVideoCapturer.startCapture(VIDEO_RESOLUTION_WIDTH, VIDEO_RESOLUTION_HEIGHT, FPS);
 
         mAudioSource = mPeerConnectionFactory.createAudioSource(mMediaConstraints);
