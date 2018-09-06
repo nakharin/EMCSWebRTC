@@ -39,7 +39,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     implementation 'com.karumi:dexter:5.0.0'
-    implementation 'org.webrtc:google-webrtc:1.0.24064'
+    implementation 'org.webrtc:google-webrtc:1.0.24465'
     implementation('io.socket:socket.io-client:1.0.0') {
         exclude group: 'org.json', module: 'json'
     }

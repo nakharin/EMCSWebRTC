@@ -31,6 +31,7 @@ import org.webrtc.SessionDescription;
 import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
+import org.webrtc.audio.AudioDeviceModule;
 
 import java.net.URISyntaxException;
 import java.security.KeyManagementException;
@@ -351,7 +352,7 @@ public class WebRTCClient {
         //Initialize PeerConnectionFactory globals.
         PeerConnectionFactory.InitializationOptions initializationOptions =
                 PeerConnectionFactory.InitializationOptions.builder(mContext)
-                        .setEnableVideoHwAcceleration(true)
+//                        .setEnableVideoHwAcceleration(true)
                         .createInitializationOptions();
         PeerConnectionFactory.initialize(initializationOptions);
 
@@ -361,20 +362,45 @@ public class WebRTCClient {
                 mEglBase.getEglBaseContext(),  /* enableIntelVp8Encoder */true,  /* enableH264HighProfile */true);
         DefaultVideoDecoderFactory defaultVideoDecoderFactory = new DefaultVideoDecoderFactory(mEglBase.getEglBaseContext());
 
+        AudioDeviceModule audioDeviceModule = new AudioDeviceModule() {
+            @Override
+            public long getNativeAudioDeviceModulePointer() {
+                return 0;
+            }
+
+            @Override
+            public void release() {
+
+            }
+
+            @Override
+            public void setSpeakerMute(boolean b) {
+
+            }
+
+            @Override
+            public void setMicrophoneMute(boolean b) {
+
+            }
+        };
+
         mPeerConnectionFactory = PeerConnectionFactory.builder()
                 .setOptions(options)
                 .setVideoEncoderFactory(defaultVideoEncoderFactory)
                 .setVideoDecoderFactory(defaultVideoDecoderFactory)
+                .setAudioDeviceModule(audioDeviceModule)
                 .createPeerConnectionFactory();
 
-        mPeerConnectionFactory.setVideoHwAccelerationOptions(mEglBase.getEglBaseContext(), mEglBase.getEglBaseContext());
+
+//        mPeerConnectionFactory.setVideoHwAccelerationOptions(mEglBase.getEglBaseContext(), mEglBase.getEglBaseContext());
     }
 
     private void createVideoTrackFromCameraAndShowIt() {
         Log.i(TAG, "createVideoTrackFromCameraAndShowIt");
-        //Now create a VideoCapturer instance.
+        // Now create a VideoCapturer instance.
         mVideoCapturer = createVideoCapturer();
-        mVideoSource = mPeerConnectionFactory.createVideoSource(mVideoCapturer);
+        mVideoSource = mPeerConnectionFactory.createVideoSource(mVideoCapturer.isScreencast());
+//        mVideoSource = mPeerConnectionFactory.createVideoSource(mVideoCapturer);
         mVideoCapturer.startCapture(VIDEO_RESOLUTION_WIDTH, VIDEO_RESOLUTION_HEIGHT, FPS);
 
         mAudioSource = mPeerConnectionFactory.createAudioSource(mMediaConstraints);
