@@ -33,7 +33,6 @@ import org.webrtc.SurfaceTextureHelper;
 import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
-import org.webrtc.audio.AudioDeviceModule;
 
 import java.net.URISyntaxException;
 import java.security.KeyManagementException;
@@ -67,30 +66,32 @@ public class WebRTCClient {
     private static final String VIDEO_TRACK_ID = "100";
     private static final String AUDIO_TRACK_ID = "101";
 
-    private Context mContext;
-    private EglBase mEglBase;
+    private Context mContext = null;
+    private EglBase mEglBase = null;
 
-    private VideoTrack mLocalVideoTrack;
-    private AudioTrack mLocalAudioTrack;
+    private VideoTrack mLocalVideoTrack = null;
+    private AudioTrack mLocalAudioTrack = null;
 
-    private VideoSource mVideoSource;
-    private AudioSource mAudioSource;
+    private VideoSource mVideoSource = null;
+    private AudioSource mAudioSource = null;
 
-    private VideoCapturer mVideoCapturer;
+    private VideoCapturer mVideoCapturer = null;
 
-    private CapturerObserver mCapturerObserver;
+    private SurfaceTextureHelper surfaceTextureHelper = null;
 
-    private OnWebRTCClientListener mOnWebRTCClientListener;
+    private CapturerObserver mCapturerObserver = null;
 
-    private Socket mSocket;
+    private OnWebRTCClientListener mOnWebRTCClientListener = null;
+
+    private Socket mSocket = null;
 
     private MediaConstraints mMediaConstraints = new MediaConstraints();
 
-    private PeerConnectionFactory mPeerConnectionFactory;
-    private PeerConnection mPeerConnection;
+    private PeerConnectionFactory mPeerConnectionFactory = null;
+    private PeerConnection mPeerConnection = null;
 
-    private String mCallId;
-    private String mRoomId;
+    private String mCallId = "";
+    private String mRoomId = "";
 
     private class IOEmit {
         static final String READY = "ready";
@@ -350,33 +351,41 @@ public class WebRTCClient {
                 mEglBase.getEglBaseContext(),  /* enableIntelVp8Encoder */true,  /* enableH264HighProfile */true);
         DefaultVideoDecoderFactory defaultVideoDecoderFactory = new DefaultVideoDecoderFactory(mEglBase.getEglBaseContext());
 
-        AudioDeviceModule audioDeviceModule = new AudioDeviceModule() {
-            @Override
-            public long getNativeAudioDeviceModulePointer() {
-                return 0;
-            }
-
-            @Override
-            public void release() {
-
-            }
-
-            @Override
-            public void setSpeakerMute(boolean b) {
-
-            }
-
-            @Override
-            public void setMicrophoneMute(boolean b) {
-
-            }
-        };
+//        AudioDeviceModule audioDeviceModule = new AudioDeviceModule() {
+//            @Override
+//            public long getNativeAudioDeviceModulePointer() {
+//                return 0;
+//            }
+//
+//            @Override
+//            public void release() {
+//
+//            }
+//
+//            @Override
+//            public void setSpeakerMute(boolean b) {
+//
+//            }
+//
+//            @Override
+//            public void setMicrophoneMute(boolean b) {
+//
+//            }
+//        };
+//
+//        AudioProcessingFactory audioProcessingFactory = new AudioProcessingFactory() {
+//            @Override
+//            public long createNative() {
+//                return 0;
+//            }
+//        };
 
         mPeerConnectionFactory = PeerConnectionFactory.builder()
                 .setOptions(options)
                 .setVideoEncoderFactory(defaultVideoEncoderFactory)
                 .setVideoDecoderFactory(defaultVideoDecoderFactory)
-                .setAudioDeviceModule(audioDeviceModule)
+//                .setAudioProcessingFactory(audioProcessingFactory)
+//                .setAudioDeviceModule(audioDeviceModule)
                 .createPeerConnectionFactory();
     }
 
@@ -386,7 +395,7 @@ public class WebRTCClient {
         mVideoCapturer = createVideoCapturer();
 
         mVideoSource = mPeerConnectionFactory.createVideoSource(mVideoCapturer.isScreencast());
-        SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("VideoCapturerThread", mEglBase.getEglBaseContext());
+        surfaceTextureHelper = SurfaceTextureHelper.create("VideoCapturerThread", mEglBase.getEglBaseContext());
         mCapturerObserver = mVideoSource.getCapturerObserver();
         mVideoCapturer.initialize(surfaceTextureHelper, mContext, mCapturerObserver);
         mVideoCapturer.startCapture(VIDEO_RESOLUTION_WIDTH, VIDEO_RESOLUTION_HEIGHT, FPS);
@@ -626,7 +635,6 @@ public class WebRTCClient {
             Log.i(TAG, "onIceCandidate");
             mPeerConnection.addIceCandidate(iceCandidate);
             try {
-
 
 
                 JSONObject payload = new JSONObject();

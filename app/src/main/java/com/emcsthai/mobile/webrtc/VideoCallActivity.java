@@ -1,7 +1,7 @@
 package com.emcsthai.mobile.webrtc;
 
 import android.Manifest;
-import android.media.AudioManager;
+import android.media.AudioAttributes;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -18,7 +18,6 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.emcsthai.mobile.webrtc.model.ImageCapture;
-import com.google.gson.Gson;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -314,7 +313,7 @@ public class VideoCallActivity extends AppCompatActivity {
         @Override
         public void onLocalStream(MediaStream mediaStream) {
             AudioTrack audioTrack = mediaStream.audioTracks.get(0);
-            audioTrack.setVolume(AudioManager.STREAM_ALARM);
+            audioTrack.setVolume(AudioAttributes.USAGE_MEDIA);
 
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             VideoSink videoSink = videoFrame -> {
@@ -331,7 +330,7 @@ public class VideoCallActivity extends AppCompatActivity {
         @Override
         public void onRemoteStream(MediaStream mediaStream) {
             AudioTrack audioTrack = mediaStream.audioTracks.get(0);
-            audioTrack.setVolume(AudioManager.STREAM_ALARM);
+            audioTrack.setVolume(AudioAttributes.USAGE_MEDIA);
 
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             VideoSink videoSink = videoFrame -> {
@@ -353,8 +352,12 @@ public class VideoCallActivity extends AppCompatActivity {
         @Override
         public void onReceiveImage(ImageCapture imageCapture) {
             runOnUiThread(() -> {
-                DialogViewPhoto.Companion.newInstance(imageCapture.getData(), false)
-                        .show(getSupportFragmentManager(), "dialog");
+                try {
+                    DialogViewPhoto.Companion.newInstance(imageCapture.getData(), false)
+                            .show(getSupportFragmentManager(), "dialog");
+                } catch (IllegalStateException e) {
+                    e.printStackTrace();
+                }
             });
         }
 
