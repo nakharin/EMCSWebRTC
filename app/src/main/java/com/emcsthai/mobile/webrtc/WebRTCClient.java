@@ -160,12 +160,14 @@ public class WebRTCClient {
     }
 
     public void startPreview() {
+        Log.i(TAG, "startPreview");
         if (mCapturerObserver != null) {
             mCapturerObserver.onCapturerStarted(mVideoCapturer.isScreencast());
         }
     }
 
     public void stopPreview() {
+        Log.i(TAG, "stopPreview");
         if (mCapturerObserver != null) {
             mCapturerObserver.onCapturerStopped();
         }
@@ -407,6 +409,10 @@ public class WebRTCClient {
                 .setUsername("YzYNCouZM1mhqhmseWk6")
                 .setPassword("YzYNCouZM1mhqhmseWk6")
                 .createIceServer());
+
+        mMediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
+        mMediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
+        mMediaConstraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
 
         mPeerConnection = mPeerConnectionFactory.createPeerConnection(iceServers, customPeerConnectionObserver);
     }
