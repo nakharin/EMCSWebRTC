@@ -205,6 +205,11 @@ public class WebRTCClient {
             mLocalAudioTrack = null;
         }
 
+        if (mVideoCapturer != null) {
+            mVideoCapturer.dispose();
+            mVideoCapturer = null;
+        }
+
         if (mPeerConnection != null) {
             mPeerConnection.close();
             mPeerConnection = null;
@@ -603,9 +608,9 @@ public class WebRTCClient {
         Log.d(TAG, "emit_message : " + message);
     }
 
-    /*******************************************************************************
-     ********************************* Listener ************************************
-     *******************************************************************************/
+    /*****************************************************************************************
+     ************************************** Listener *****************************************
+     *****************************************************************************************/
 
     private PeerConnection.Observer customPeerConnectionObserver = new CustomPeerConnectionObserver("customPeerConnectionObserver") {
 
@@ -635,8 +640,6 @@ public class WebRTCClient {
             Log.i(TAG, "onIceCandidate");
             mPeerConnection.addIceCandidate(iceCandidate);
             try {
-
-
                 JSONObject payload = new JSONObject();
                 payload.put("label", iceCandidate.sdpMLineIndex);
                 payload.put("id", iceCandidate.sdpMid);
@@ -679,27 +682,31 @@ public class WebRTCClient {
         @Override
         public void onCameraSwitchDone(boolean b) {
             Log.i(TAG, "onCameraSwitchDone: " + b);
+            if (mOnWebRTCClientListener != null) {
+                mOnWebRTCClientListener.onCameraSwitchDone(b);
+            }
         }
 
         @Override
         public void onCameraSwitchError(String s) {
-            Log.e(TAG, "onCameraSwitchDone: " + s);
+            Log.i(TAG, "onCameraSwitchError: " + s);
+            if (mOnWebRTCClientListener != null) {
+                mOnWebRTCClientListener.onCameraSwitchError(s);
+            }
         }
     };
 
-    /*******************************************************************************
-     **************************** interface Class **********************************
-     *******************************************************************************/
+    /*****************************************************************************************
+     ************************************ Interface Class ************************************
+     *****************************************************************************************/
 
     public interface OnWebRTCClientListener {
         void onCallReady(String callId);
-
         void onLocalStream(MediaStream mediaStream);
-
         void onRemoteStream(MediaStream mediaStream);
-
         void onReceiveImage(ImageCapture image);
-
         void onHangUp();
+        void onCameraSwitchDone(boolean isSwitch);
+        void onCameraSwitchError(String error);
     }
 }

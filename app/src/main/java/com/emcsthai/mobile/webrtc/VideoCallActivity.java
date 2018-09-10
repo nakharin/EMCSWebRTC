@@ -149,7 +149,7 @@ public class VideoCallActivity extends AppCompatActivity {
 
         localSurfaceView.init(rootEglBase.getEglBaseContext(), new CustomRendererEvents("local"));
         localSurfaceView.setEnableHardwareScaler(true);
-        localSurfaceView.setMirror(false);
+        localSurfaceView.setMirror(true);
     }
 
     private void initConstraintSet() {
@@ -365,6 +365,20 @@ public class VideoCallActivity extends AppCompatActivity {
         public void onHangUp() {
             handUp();
             finish();
+        }
+
+        @Override
+        public void onCameraSwitchDone(boolean isSwitch) {
+            runOnUiThread(() -> {
+                localSurfaceView.setMirror(isSwitch);
+            });
+        }
+
+        @Override
+        public void onCameraSwitchError(String error) {
+            runOnUiThread(() -> {
+                Toast.makeText(VideoCallActivity.this, "onCameraSwitchError: " + error, Toast.LENGTH_SHORT).show();
+            });
         }
     };
 }
