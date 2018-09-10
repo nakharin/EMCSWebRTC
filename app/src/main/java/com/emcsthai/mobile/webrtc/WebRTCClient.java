@@ -706,7 +706,7 @@ public class WebRTCClient {
         void onRemoteStream(MediaStream mediaStream);
         void onReceiveImage(ImageCapture image);
         void onHangUp();
-        void onCameraSwitchDone(boolean isSwitch);
+        void onCameraSwitchDone(boolean isFrontSize);
         void onCameraSwitchError(String error);
     }
 }

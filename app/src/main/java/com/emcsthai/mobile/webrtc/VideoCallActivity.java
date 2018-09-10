@@ -368,9 +368,9 @@ public class VideoCallActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onCameraSwitchDone(boolean isSwitch) {
+        public void onCameraSwitchDone(boolean isFrontSize) {
             runOnUiThread(() -> {
-                localSurfaceView.setMirror(isSwitch);
+                localSurfaceView.setMirror(isFrontSize);
             });
         }
 
