@@ -85,8 +85,6 @@ public class WebRTCClient {
 
     private Socket mSocket = null;
 
-    private MediaConstraints mMediaConstraints = new MediaConstraints();
-
     private PeerConnectionFactory mPeerConnectionFactory = null;
     private PeerConnection mPeerConnection = null;
 
@@ -405,7 +403,7 @@ public class WebRTCClient {
         mVideoCapturer.initialize(surfaceTextureHelper, mContext, mCapturerObserver);
         mVideoCapturer.startCapture(VIDEO_RESOLUTION_WIDTH, VIDEO_RESOLUTION_HEIGHT, FPS);
 
-        mAudioSource = mPeerConnectionFactory.createAudioSource(mMediaConstraints);
+        mAudioSource = mPeerConnectionFactory.createAudioSource(new MediaConstraints());
         mLocalAudioTrack = mPeerConnectionFactory.createAudioTrack(AUDIO_TRACK_ID, mAudioSource);
         mLocalAudioTrack.setEnabled(true);
 
@@ -424,11 +422,16 @@ public class WebRTCClient {
                 .setPassword("YzYNCouZM1mhqhmseWk6")
                 .createIceServer());
 
-        mMediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
-        mMediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
-        mMediaConstraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
+        PeerConnection.RTCConfiguration rtcConfiguration = new PeerConnection.RTCConfiguration(iceServers);
 
-        mPeerConnection = mPeerConnectionFactory.createPeerConnection(iceServers, customPeerConnectionObserver);
+//        MediaConstraints mMediaConstraints = new MediaConstraints();
+//
+//        mMediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
+//        mMediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
+//        mMediaConstraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
+//        mMediaConstraints.optional.add(new MediaConstraints.KeyValuePair("googCpuOveruseDetection", "false"));
+
+        mPeerConnection = mPeerConnectionFactory.createPeerConnection(rtcConfiguration, customPeerConnectionObserver);
     }
 
     private void startStreamingVideo() {
@@ -458,7 +461,7 @@ public class WebRTCClient {
                     e.printStackTrace();
                 }
             }
-        }, mMediaConstraints);
+        }, new MediaConstraints());
     }
 
     private void receiveOffer(JSONObject payload) {
@@ -490,7 +493,7 @@ public class WebRTCClient {
                     e.printStackTrace();
                 }
             }
-        }, mMediaConstraints);
+        }, new MediaConstraints());
     }
 
     private void receiveAnswer(JSONObject payload) {
@@ -537,8 +540,7 @@ public class WebRTCClient {
         // First, try to find front facing camera
         for (String deviceName : deviceNames) {
             if (enumerator.isFrontFacing(deviceName)) {
-                VideoCapturer videoCapturer = enumerator.createCapturer(deviceName, null);
-
+                VideoCapturer videoCapturer = enumerator.createCapturer(deviceName, cameraEventsHandler);
                 if (videoCapturer != null) {
                     return videoCapturer;
                 }
@@ -548,7 +550,7 @@ public class WebRTCClient {
         // Front facing camera not found, try something else
         for (String deviceName : deviceNames) {
             if (!enumerator.isFrontFacing(deviceName)) {
-                VideoCapturer videoCapturer = enumerator.createCapturer(deviceName, null);
+                VideoCapturer videoCapturer = enumerator.createCapturer(deviceName, cameraEventsHandler);
 
                 if (videoCapturer != null) {
                     return videoCapturer;
@@ -612,7 +614,7 @@ public class WebRTCClient {
      ************************************** Listener *****************************************
      *****************************************************************************************/
 
-    private PeerConnection.Observer customPeerConnectionObserver = new CustomPeerConnectionObserver("customPeerConnectionObserver") {
+    private final PeerConnection.Observer customPeerConnectionObserver = new CustomPeerConnectionObserver("customPeerConnectionObserver") {
 
         @Override
         public void onSignalingChange(PeerConnection.SignalingState signalingState) {
@@ -678,7 +680,7 @@ public class WebRTCClient {
         }
     };
 
-    private CameraVideoCapturer.CameraSwitchHandler cameraSwitchHandler = new CameraVideoCapturer.CameraSwitchHandler() {
+    private final CameraVideoCapturer.CameraSwitchHandler cameraSwitchHandler = new CameraVideoCapturer.CameraSwitchHandler() {
         @Override
         public void onCameraSwitchDone(boolean b) {
             Log.i(TAG, "onCameraSwitchDone: " + b);
@@ -696,6 +698,38 @@ public class WebRTCClient {
         }
     };
 
+    private final CameraVideoCapturer.CameraEventsHandler  cameraEventsHandler = new CameraVideoCapturer.CameraEventsHandler() {
+        @Override
+        public void onCameraError(String s) {
+            Log.d(TAG, "onCameraError() called with: s = [" + s + "]");
+        }
+
+        @Override
+        public void onCameraDisconnected() {
+            Log.d(TAG, "onCameraDisconnected() called");
+        }
+
+        @Override
+        public void onCameraFreezed(String s) {
+            Log.d(TAG, "onCameraFreezed() called with: s = [" + s + "]");
+        }
+
+        @Override
+        public void onCameraOpening(String s) {
+            Log.d(TAG, "onCameraOpening() called with: s = [" + s + "]");
+        }
+
+        @Override
+        public void onFirstFrameAvailable() {
+            Log.d(TAG, "onFirstFrameAvailable() called");
+        }
+
+        @Override
+        public void onCameraClosed() {
+            Log.d(TAG, "onCameraClosed() called");
+        }
+    };
+
     /*****************************************************************************************
      ************************************ Interface Class ************************************
      *****************************************************************************************/
@@ -706,7 +740,7 @@ public class WebRTCClient {
         void onRemoteStream(MediaStream mediaStream);
         void onReceiveImage(ImageCapture image);
         void onHangUp();
-        void onCameraSwitchDone(boolean isFrontSize);
+        void onCameraSwitchDone(boolean isFrontSide);
         void onCameraSwitchError(String error);
     }
 }
