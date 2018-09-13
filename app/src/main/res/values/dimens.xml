@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="my_button_corner">32dp</dimen>
+
+</resources>
