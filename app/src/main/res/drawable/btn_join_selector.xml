@@ -4,15 +4,15 @@
     <item
         android:state_enabled="false"
         android:state_pressed="false"
-        android:drawable="@drawable/btn_active_disable" />
+        android:drawable="@drawable/btn_join_disable" />
 
     <item android:state_enabled="true"
         android:state_pressed="false"
-        android:drawable="@drawable/btn_active_normal" />
+        android:drawable="@drawable/btn_join_normal" />
 
     <item
         android:state_enabled="true"
         android:state_pressed="true"
-        android:drawable="@drawable/btn_active_pressed" />
+        android:drawable="@drawable/btn_join_pressed" />
 
 </selector>

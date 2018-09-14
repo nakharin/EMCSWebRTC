@@ -23,9 +23,6 @@ public class MainActivity extends AppCompatActivity {
 
     private AppCompatButton btnJoin;
 
-    private AppCompatButton btnEnable;
-    private AppCompatButton btnDisable;
-
     private ProgressDialog progressDialog;
 
     @Override
@@ -36,8 +33,6 @@ public class MainActivity extends AppCompatActivity {
         initWidgets();
 
         btnJoin.setOnClickListener(onClickListener);
-        btnEnable.setOnClickListener(onClickListener);
-        btnDisable.setOnClickListener(onClickListener);
         edtRoomId.setOnEditorActionListener(onEditorActionListener);
     }
 
@@ -50,8 +45,6 @@ public class MainActivity extends AppCompatActivity {
         edtRoomId = findViewById(R.id.edtRoomId);
 
         btnJoin = findViewById(R.id.btnJoin);
-        btnEnable = findViewById(R.id.btnEnable);
-        btnDisable = findViewById(R.id.btnDisable);
 
         progressDialog = new ProgressDialog(MainActivity.this);
         progressDialog.setTitle("");
@@ -77,16 +70,6 @@ public class MainActivity extends AppCompatActivity {
     private View.OnClickListener onClickListener = v -> {
         if (v == btnJoin) {
             checkJoinRoom();
-        }
-
-        if (v == btnEnable) {
-            btnJoin.setEnabled(true);
-            btnJoin.setBackgroundDrawable(ContextCompat.getDrawable(this, R.drawable.btn_active_selector));
-        }
-
-        if (v == btnDisable) {
-            btnJoin.setEnabled(false);
-            btnJoin.setBackgroundDrawable(ContextCompat.getDrawable(this, R.drawable.btn_active_disable));
         }
     };
 

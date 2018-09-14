@@ -75,7 +75,7 @@
 
             <ImageView
                 android:id="@+id/imgHangUp"
-                style="@style/RippleBackground"
+                style="@style/MyRippleSelectableItem.Background.Borderless"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@mipmap/ic_hang_up" />
@@ -86,7 +86,7 @@
 
             <ImageView
                 android:id="@+id/imgSwitchCamera"
-                style="@style/RippleBackground"
+                style="@style/MyRippleSelectableItem.Background.Borderless"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@mipmap/ic_switch_camera" />
@@ -97,7 +97,7 @@
 
             <ImageView
                 android:id="@+id/imgMute"
-                style="@style/RippleBackground"
+                style="@style/MyRippleSelectableItem.Background.Borderless"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@mipmap/ic_mic_on" />
