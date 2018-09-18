@@ -312,8 +312,11 @@ public class VideoCallActivity extends AppCompatActivity {
 
         @Override
         public void onLocalStream(MediaStream mediaStream) {
-            AudioTrack audioTrack = mediaStream.audioTracks.get(0);
-            audioTrack.setVolume(AudioAttributes.USAGE_MEDIA);
+
+
+
+//            AudioTrack audioTrack = mediaStream.audioTracks.get(0);
+//            audioTrack.setEnabled(true);
 
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             VideoSink videoSink = videoFrame -> {
@@ -329,8 +332,9 @@ public class VideoCallActivity extends AppCompatActivity {
 
         @Override
         public void onRemoteStream(MediaStream mediaStream) {
-            AudioTrack audioTrack = mediaStream.audioTracks.get(0);
-            audioTrack.setVolume(AudioAttributes.USAGE_MEDIA);
+//            AudioTrack audioTrack = mediaStream.audioTracks.get(0);
+////            audioTrack.setEnabled(true);
+//            audioTrack.setVolume(1);
 
             VideoTrack videoTrack = mediaStream.videoTracks.get(0);
             VideoSink videoSink = videoFrame -> {

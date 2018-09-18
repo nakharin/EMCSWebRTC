@@ -3,6 +3,7 @@ package com.emcsthai.mobile.webrtc;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.media.AudioManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.Toast;
@@ -42,6 +43,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -50,6 +52,8 @@ import javax.net.ssl.X509TrustManager;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import okhttp3.OkHttpClient;
+
+import static android.content.Context.AUDIO_SERVICE;
 
 public class WebRTCClient {
 
@@ -406,6 +410,10 @@ public class WebRTCClient {
         mAudioSource = mPeerConnectionFactory.createAudioSource(new MediaConstraints());
         mLocalAudioTrack = mPeerConnectionFactory.createAudioTrack(AUDIO_TRACK_ID, mAudioSource);
         mLocalAudioTrack.setEnabled(true);
+
+        AudioManager audioManager = (AudioManager) mContext.getSystemService(AUDIO_SERVICE);
+        float volume = (float) Objects.requireNonNull(audioManager).getStreamVolume(AudioManager.STREAM_MUSIC);
+        mLocalAudioTrack.setVolume(volume);
 
         mLocalVideoTrack = mPeerConnectionFactory.createVideoTrack(VIDEO_TRACK_ID, mVideoSource);
         mLocalVideoTrack.setEnabled(true);
