@@ -412,8 +412,12 @@ public class WebRTCClient {
         mLocalAudioTrack.setEnabled(true);
 
         AudioManager audioManager = (AudioManager) mContext.getSystemService(AUDIO_SERVICE);
-        float volume = (float) Objects.requireNonNull(audioManager).getStreamVolume(AudioManager.STREAM_MUSIC);
+        Objects.requireNonNull(audioManager).setMode(AudioManager.MODE_IN_COMMUNICATION);
+        Objects.requireNonNull(audioManager).setSpeakerphoneOn(true);
+        Objects.requireNonNull(audioManager).setStreamVolume(AudioManager.STREAM_MUSIC, 30, 0);
+        double volume = (double) Objects.requireNonNull(audioManager).getStreamVolume(AudioManager.STREAM_MUSIC);
         mLocalAudioTrack.setVolume(volume);
+
 
         mLocalVideoTrack = mPeerConnectionFactory.createVideoTrack(VIDEO_TRACK_ID, mVideoSource);
         mLocalVideoTrack.setEnabled(true);
