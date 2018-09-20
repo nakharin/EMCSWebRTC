@@ -183,37 +183,37 @@ public class WebRTCClient {
             mSocket.close();
         }
 
-//        if (mOnWebRTCClientListener != null) {
-//            mOnWebRTCClientListener = null;
-//        }
+        if (mOnWebRTCClientListener != null) {
+            mOnWebRTCClientListener = null;
+        }
 
-//        if (mVideoSource != null) {
-//            mVideoSource.dispose();
-//            mVideoSource = null;
-//        }
-//
-//        if (mAudioSource != null) {
-//            mAudioSource.dispose();
-//            mAudioSource = null;
-//        }
-//
-//        if (mLocalVideoTrack != null) {
-//            mLocalVideoTrack.dispose();
-//            mLocalVideoTrack = null;
-//        }
-//
-//        if (mLocalAudioTrack != null) {
-//            mLocalAudioTrack.dispose();
-//            mLocalAudioTrack = null;
-//        }
-//
+        if (mVideoSource != null) {
+            mVideoSource.dispose();
+            mVideoSource = null;
+        }
+
+        if (mAudioSource != null) {
+            mAudioSource.dispose();
+            mAudioSource = null;
+        }
+
+        if (mLocalVideoTrack != null) {
+            mLocalVideoTrack.dispose();
+            mLocalVideoTrack = null;
+        }
+
+        if (mLocalAudioTrack != null) {
+            mLocalAudioTrack.dispose();
+            mLocalAudioTrack = null;
+        }
+
         if (mVideoCapturer != null) {
             mVideoCapturer.dispose();
             mVideoCapturer = null;
         }
 
         if (mPeerConnection != null) {
-            mPeerConnection.dispose();
+            mPeerConnection.close();
             mPeerConnection = null;
         }
     }
@@ -412,10 +412,11 @@ public class WebRTCClient {
         mLocalAudioTrack.setEnabled(true);
 
         AudioManager audioManager = (AudioManager) mContext.getSystemService(AUDIO_SERVICE);
-//        Objects.requireNonNull(audioManager).setMode(AudioManager.MODE_IN_COMMUNICATION);
-//        Objects.requireNonNull(audioManager).setSpeakerphoneOn(true);
-        Objects.requireNonNull(audioManager).setStreamVolume(AudioManager.STREAM_MUSIC, 50, 0);
-        double volume = (double) Objects.requireNonNull(audioManager).getStreamVolume(AudioManager.STREAM_MUSIC);
+        Objects.requireNonNull(audioManager).setMode(AudioManager.MODE_IN_COMMUNICATION);
+        Objects.requireNonNull(audioManager).setSpeakerphoneOn(true);
+        Objects.requireNonNull(audioManager).setMicrophoneMute(false);
+        Objects.requireNonNull(audioManager).setStreamVolume(AudioManager.STREAM_VOICE_CALL, 50, 0);
+        double volume = (double) Objects.requireNonNull(audioManager).getStreamVolume(AudioManager.STREAM_VOICE_CALL);
         mLocalAudioTrack.setVolume(volume);
 
 
@@ -710,7 +711,7 @@ public class WebRTCClient {
         }
     };
 
-    private final CameraVideoCapturer.CameraEventsHandler  cameraEventsHandler = new CameraVideoCapturer.CameraEventsHandler() {
+    private final CameraVideoCapturer.CameraEventsHandler cameraEventsHandler = new CameraVideoCapturer.CameraEventsHandler() {
         @Override
         public void onCameraError(String s) {
             Log.d(TAG, "onCameraError() called with: s = [" + s + "]");
@@ -748,11 +749,17 @@ public class WebRTCClient {
 
     public interface OnWebRTCClientListener {
         void onCallReady(String callId);
+
         void onLocalStream(MediaStream mediaStream);
+
         void onRemoteStream(MediaStream mediaStream);
+
         void onReceiveImage(ImageCapture image);
+
         void onHangUp();
+
         void onCameraSwitchDone(boolean isFrontSide);
+
         void onCameraSwitchError(String error);
     }
 }
