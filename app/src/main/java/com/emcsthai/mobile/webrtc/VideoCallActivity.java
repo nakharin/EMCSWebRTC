@@ -1,7 +1,8 @@
 package com.emcsthai.mobile.webrtc;
 
 import android.Manifest;
-import android.media.AudioAttributes;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -16,15 +17,17 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.emcsthai.mobile.webrtc.model.ImageCapture;
+import com.irozon.alertview.AlertActionStyle;
+import com.irozon.alertview.AlertStyle;
+import com.irozon.alertview.AlertView;
+import com.irozon.alertview.objects.AlertAction;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 
-import org.webrtc.AudioTrack;
 import org.webrtc.EglBase;
 import org.webrtc.MediaStream;
 import org.webrtc.SurfaceViewRenderer;
@@ -35,6 +38,8 @@ import java.util.List;
 
 public class VideoCallActivity extends AppCompatActivity {
 
+    private HeadSetStateReceiver headSetStateReceiver;
+
     private EglBase rootEglBase;
 
     private ConstraintSet consSetHalf = new ConstraintSet();
@@ -42,6 +47,7 @@ public class VideoCallActivity extends AppCompatActivity {
     private ConstraintSet consSetRemote = new ConstraintSet();
 
     private ConstraintLayout rootLayout;
+
     private ImageView imgScreenType;
 
     private SurfaceViewRenderer remoteSurfaceView;
@@ -61,6 +67,8 @@ public class VideoCallActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_call_remote_screen);
+
+        headSetStateReceiver = new HeadSetStateReceiver();
 
         initWidgets();
 
@@ -108,6 +116,12 @@ public class VideoCallActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        if (headSetStateReceiver != null) {
+            IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
+            registerReceiver(headSetStateReceiver, filter);
+        }
+
         if (webRTCClient != null) {
             webRTCClient.startPreview();
         }
@@ -116,6 +130,11 @@ public class VideoCallActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+
+        if (headSetStateReceiver != null) {
+            unregisterReceiver(headSetStateReceiver);
+        }
+
         if (webRTCClient != null) {
             webRTCClient.stopPreview();
         }
@@ -201,19 +220,16 @@ public class VideoCallActivity extends AppCompatActivity {
     }
 
     private void dialogHandUp() {
-        new MaterialDialog.Builder(this)
-                .title("Hand up")
-                .content("Do you want hand up?")
-                .positiveText("Yes")
-                .negativeText("No")
-                .onPositive((dialog, which) -> {
-                    dialog.dismiss();
-                    handUp();
-                    finish();
-                })
-                .onNegative((dialog, which) -> {
-                    dialog.dismiss();
-                }).show();
+        AlertView alert = new AlertView("Hand up", "Do you want hand up?", AlertStyle.BOTTOM_SHEET);
+        alert.addAction(new AlertAction("Yes", AlertActionStyle.POSITIVE, action -> {
+            handUp();
+            finish();
+        }));
+        alert.addAction(new AlertAction("No", AlertActionStyle.NEGATIVE, action -> {
+
+        }));
+
+        alert.show(this);
     }
 
     private void handUp() {
