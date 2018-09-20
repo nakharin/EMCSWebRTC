@@ -164,16 +164,16 @@ public class WebRTCClient {
 
     public void startPreview() {
         Log.i(TAG, "startPreview");
-        if (mCapturerObserver != null) {
-            mCapturerObserver.onCapturerStarted(mVideoCapturer.isScreencast());
-        }
+//        if (mCapturerObserver != null) {
+//            mCapturerObserver.onCapturerStarted(mVideoCapturer.isScreencast());
+//        }
     }
 
     public void stopPreview() {
         Log.i(TAG, "stopPreview");
-        if (mCapturerObserver != null) {
-            mCapturerObserver.onCapturerStopped();
-        }
+//        if (mCapturerObserver != null) {
+//            mCapturerObserver.onCapturerStopped();
+//        }
     }
 
     private void close() {
@@ -183,37 +183,37 @@ public class WebRTCClient {
             mSocket.close();
         }
 
-        if (mOnWebRTCClientListener != null) {
-            mOnWebRTCClientListener = null;
-        }
+//        if (mOnWebRTCClientListener != null) {
+//            mOnWebRTCClientListener = null;
+//        }
 
-        if (mVideoSource != null) {
-            mVideoSource.dispose();
-            mVideoSource = null;
-        }
-
-        if (mAudioSource != null) {
-            mAudioSource.dispose();
-            mAudioSource = null;
-        }
-
-        if (mLocalVideoTrack != null) {
-            mLocalVideoTrack.dispose();
-            mLocalVideoTrack = null;
-        }
-
-        if (mLocalAudioTrack != null) {
-            mLocalAudioTrack.dispose();
-            mLocalAudioTrack = null;
-        }
-
+//        if (mVideoSource != null) {
+//            mVideoSource.dispose();
+//            mVideoSource = null;
+//        }
+//
+//        if (mAudioSource != null) {
+//            mAudioSource.dispose();
+//            mAudioSource = null;
+//        }
+//
+//        if (mLocalVideoTrack != null) {
+//            mLocalVideoTrack.dispose();
+//            mLocalVideoTrack = null;
+//        }
+//
+//        if (mLocalAudioTrack != null) {
+//            mLocalAudioTrack.dispose();
+//            mLocalAudioTrack = null;
+//        }
+//
         if (mVideoCapturer != null) {
             mVideoCapturer.dispose();
             mVideoCapturer = null;
         }
 
         if (mPeerConnection != null) {
-            mPeerConnection.close();
+            mPeerConnection.dispose();
             mPeerConnection = null;
         }
     }
@@ -412,9 +412,9 @@ public class WebRTCClient {
         mLocalAudioTrack.setEnabled(true);
 
         AudioManager audioManager = (AudioManager) mContext.getSystemService(AUDIO_SERVICE);
-        Objects.requireNonNull(audioManager).setMode(AudioManager.MODE_IN_COMMUNICATION);
-        Objects.requireNonNull(audioManager).setSpeakerphoneOn(true);
-        Objects.requireNonNull(audioManager).setStreamVolume(AudioManager.STREAM_MUSIC, 30, 0);
+//        Objects.requireNonNull(audioManager).setMode(AudioManager.MODE_IN_COMMUNICATION);
+//        Objects.requireNonNull(audioManager).setSpeakerphoneOn(true);
+        Objects.requireNonNull(audioManager).setStreamVolume(AudioManager.STREAM_MUSIC, 50, 0);
         double volume = (double) Objects.requireNonNull(audioManager).getStreamVolume(AudioManager.STREAM_MUSIC);
         mLocalAudioTrack.setVolume(volume);
 
