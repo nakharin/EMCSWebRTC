@@ -146,12 +146,12 @@ public class WebRTCClient {
 
     public void microphoneOn() {
         mAudioManager.setMicrophoneMute(false);
-        Toast.makeText(mContext, "Microphone is Mute.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mContext, "Microphone is On.", Toast.LENGTH_SHORT).show();
     }
 
     public void microphoneOff() {
         mAudioManager.setMicrophoneMute(true);
-        Toast.makeText(mContext, "Microphone is UnMute.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mContext, "Microphone is Off.", Toast.LENGTH_SHORT).show();
     }
 
     public void disconnect() {

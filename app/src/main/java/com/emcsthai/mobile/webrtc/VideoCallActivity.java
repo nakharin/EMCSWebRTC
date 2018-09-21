@@ -271,7 +271,7 @@ public class VideoCallActivity extends AppCompatActivity {
         LOCAL_SMALL, REMOTE_SMALL, SPLIT_HALF
     }
 
-    private View.OnClickListener onClickListener = v -> {
+    private final View.OnClickListener onClickListener = v -> {
 
         if (v == rootLayout) {
             if (!isShow) {
@@ -320,7 +320,7 @@ public class VideoCallActivity extends AppCompatActivity {
         }
     };
 
-    private WebRTCClient.OnWebRTCClientListener onWebRTCClientListener = new WebRTCClient.OnWebRTCClientListener() {
+    private final WebRTCClient.OnWebRTCClientListener onWebRTCClientListener = new WebRTCClient.OnWebRTCClientListener() {
 
         @Override
         public void onCallReady(String callId) {

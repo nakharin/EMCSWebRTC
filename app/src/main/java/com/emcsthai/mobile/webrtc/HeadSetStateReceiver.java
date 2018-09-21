@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.Objects;
 
@@ -20,10 +21,12 @@ public class HeadSetStateReceiver extends BroadcastReceiver {
             switch (state) {
                 case 0:
                     Log.d(TAG, "Headset is unplugged");
+                    Toast.makeText(context, "Speakerphone is On.", Toast.LENGTH_SHORT).show();
                     Objects.requireNonNull(audioManager).setSpeakerphoneOn(true);
                     break;
                 case 1:
                     Log.d(TAG, "Headset is plugged");
+                    Toast.makeText(context, "Speakerphone is Off.", Toast.LENGTH_SHORT).show();
                     Objects.requireNonNull(audioManager).setSpeakerphoneOn(false);
                     break;
                 default:
