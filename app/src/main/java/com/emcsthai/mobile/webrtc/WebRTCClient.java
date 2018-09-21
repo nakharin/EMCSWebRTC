@@ -589,16 +589,33 @@ public class WebRTCClient {
         Log.d(TAG, "emit_join : " + roomName);
     }
 
+    private int gcd(int p, int q) {
+        if (q == 0) return p;
+        else return gcd(q, p % q);
+    }
+
+    private String getAspectRatio(int a, int b) {
+        final int gcd = gcd(a,b);
+        if(a > b) {
+            return (a/gcd) + ":" + (b/gcd);
+        } else {
+            return (b/gcd) + ":" + (a/gcd);
+        }
+    }
+
     private void emitScreenSize(String roomId) {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         ((Activity) mContext).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
         int width = displayMetrics.widthPixels;
 
+        String ratio = getAspectRatio(width, height);
+
         JSONObject message = new JSONObject();
         try {
             message.put("os", "mobile");
             message.put("to", roomId);
+            message.put("ratio", ratio);
             message.put("height", height);
             message.put("width", width);
         } catch (JSONException e) {
