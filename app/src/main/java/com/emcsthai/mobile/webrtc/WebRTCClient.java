@@ -767,17 +767,11 @@ public class WebRTCClient {
 
     public interface OnWebRTCClientListener {
         void onCallReady(String callId);
-
         void onLocalStream(MediaStream mediaStream);
-
         void onRemoteStream(MediaStream mediaStream);
-
         void onReceiveImage(ImageCapture image);
-
         void onHangUp();
-
         void onCameraSwitchDone(boolean isFrontSide);
-
         void onCameraSwitchError(String error);
     }
 }
