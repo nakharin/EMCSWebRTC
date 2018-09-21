@@ -43,7 +43,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -70,8 +69,12 @@ public class WebRTCClient {
     private static final String VIDEO_TRACK_ID = "100";
     private static final String AUDIO_TRACK_ID = "101";
 
-    private Context mContext = null;
-    private EglBase mEglBase = null;
+    private Context mContext;
+    private EglBase mEglBase;
+
+    private OnWebRTCClientListener mOnWebRTCClientListener;
+
+    private AudioManager mAudioManager;
 
     private VideoTrack mLocalVideoTrack = null;
     private AudioTrack mLocalAudioTrack = null;
@@ -81,15 +84,10 @@ public class WebRTCClient {
 
     private VideoCapturer mVideoCapturer = null;
 
-    private SurfaceTextureHelper surfaceTextureHelper = null;
-
-    private CapturerObserver mCapturerObserver = null;
-
-    private OnWebRTCClientListener mOnWebRTCClientListener = null;
-
     private Socket mSocket = null;
 
     private PeerConnectionFactory mPeerConnectionFactory = null;
+
     private PeerConnection mPeerConnection = null;
 
     private String mCallId = "";
@@ -121,6 +119,8 @@ public class WebRTCClient {
         mEglBase = eglBase;
         mOnWebRTCClientListener = onWebRTCClientListener;
 
+        mAudioManager = (AudioManager) mContext.getSystemService(AUDIO_SERVICE);
+
         // Method from this class
         initPeerConnectionFactory();
         // Method from this class
@@ -145,11 +145,13 @@ public class WebRTCClient {
     }
 
     public void microphoneOn() {
-        mLocalAudioTrack.setEnabled(true);
+        mAudioManager.setMicrophoneMute(false);
+        Toast.makeText(mContext, "Microphone is Mute.", Toast.LENGTH_SHORT).show();
     }
 
     public void microphoneOff() {
-        mLocalAudioTrack.setEnabled(false);
+        mAudioManager.setMicrophoneMute(true);
+        Toast.makeText(mContext, "Microphone is UnMute.", Toast.LENGTH_SHORT).show();
     }
 
     public void disconnect() {
@@ -402,8 +404,8 @@ public class WebRTCClient {
         mVideoCapturer = createVideoCapturer();
 
         mVideoSource = mPeerConnectionFactory.createVideoSource(mVideoCapturer.isScreencast());
-        surfaceTextureHelper = SurfaceTextureHelper.create("VideoCapturerThread", mEglBase.getEglBaseContext());
-        mCapturerObserver = mVideoSource.getCapturerObserver();
+        SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("VideoCapturerThread", mEglBase.getEglBaseContext());
+        CapturerObserver mCapturerObserver = mVideoSource.getCapturerObserver();
         mVideoCapturer.initialize(surfaceTextureHelper, mContext, mCapturerObserver);
         mVideoCapturer.startCapture(VIDEO_RESOLUTION_WIDTH, VIDEO_RESOLUTION_HEIGHT, FPS);
 
@@ -411,12 +413,11 @@ public class WebRTCClient {
         mLocalAudioTrack = mPeerConnectionFactory.createAudioTrack(AUDIO_TRACK_ID, mAudioSource);
         mLocalAudioTrack.setEnabled(true);
 
-        AudioManager audioManager = (AudioManager) mContext.getSystemService(AUDIO_SERVICE);
-        Objects.requireNonNull(audioManager).setMode(AudioManager.MODE_IN_COMMUNICATION);
-        Objects.requireNonNull(audioManager).setSpeakerphoneOn(true);
-        Objects.requireNonNull(audioManager).setMicrophoneMute(false);
-        Objects.requireNonNull(audioManager).setStreamVolume(AudioManager.STREAM_VOICE_CALL, 50, 0);
-        double volume = (double) Objects.requireNonNull(audioManager).getStreamVolume(AudioManager.STREAM_VOICE_CALL);
+        mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+        mAudioManager.setSpeakerphoneOn(true);
+        mAudioManager.setMicrophoneMute(false);
+        mAudioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 50, 0);
+        double volume = (double) mAudioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
         mLocalAudioTrack.setVolume(volume);
 
 
