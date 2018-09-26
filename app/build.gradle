@@ -55,5 +55,5 @@ dependencies {
 
     implementation 'com.irozon.alertview:alertview:1.0.1'
 
-//    implementation 'com.github.picnic:FingerPaintView:1.0.0'
+    implementation 'ja.burhanrashid52:photoeditor:0.3.3'
 }

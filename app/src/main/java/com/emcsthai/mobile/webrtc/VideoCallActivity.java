@@ -320,6 +320,13 @@ public class VideoCallActivity extends AppCompatActivity {
         }
     };
 
+    private final DialogViewPhoto.OnDrawingTouchListener onDrawingTouchListener = new DialogViewPhoto.OnDrawingTouchListener() {
+        @Override
+        public void onTouch(float x, float y) {
+            webRTCClient.emitDrawing(x, y);
+        }
+    };
+
     private final WebRTCClient.OnWebRTCClientListener onWebRTCClientListener = new WebRTCClient.OnWebRTCClientListener() {
 
         @Override
@@ -392,13 +399,6 @@ public class VideoCallActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 Toast.makeText(VideoCallActivity.this, "onCameraSwitchError: " + error, Toast.LENGTH_SHORT).show();
             });
-        }
-    };
-
-    private final DialogViewPhoto.OnDrawingTouchListener onDrawingTouchListener = new DialogViewPhoto.OnDrawingTouchListener() {
-        @Override
-        public void onTouch(float x, float y) {
-            webRTCClient.emitDrawing(x, y);
         }
     };
 }

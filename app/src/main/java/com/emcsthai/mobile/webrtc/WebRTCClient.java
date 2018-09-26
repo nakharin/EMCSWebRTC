@@ -9,6 +9,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.emcsthai.mobile.webrtc.model.ImageCapture;
+import com.emcsthai.mobile.webrtc.model.DrawingPoint;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
@@ -73,6 +74,7 @@ public class WebRTCClient {
     private EglBase mEglBase;
 
     private OnWebRTCClientListener mOnWebRTCClientListener;
+    private OnWebRTCDrawingListener mOnWebRTCDrawingListener;
 
     private AudioManager mAudioManager;
 
@@ -109,12 +111,17 @@ public class WebRTCClient {
         static final String JOINED = "joined";
         static final String MESSAGE = "message";
         static final String CAPTURE = "capture";
+        static final String DRAWING = "drawing";
         static final String FULL = "full";
         static final String BYE = "bye";
         static final String DISCONNECT = "disconnect";
     }
 
-    WebRTCClient(Context context, String roomId, EglBase eglBase, OnWebRTCClientListener onWebRTCClientListener) {
+    public WebRTCClient() {
+
+    }
+
+    public WebRTCClient(Context context, String roomId, EglBase eglBase, OnWebRTCClientListener onWebRTCClientListener) {
         mContext = context;
         mRoomId = roomId;
         mEglBase = eglBase;
@@ -132,6 +139,10 @@ public class WebRTCClient {
         startStreamingVideo();
         // Method from this class
         initSocket();
+    }
+
+    public void setOnWebRTCDrawingListener(OnWebRTCDrawingListener onWebRTCDrawingListener) {
+        mOnWebRTCDrawingListener = onWebRTCDrawingListener;
     }
 
     public PeerConnectionFactory getPeerConnectionFactory() {
@@ -282,6 +293,13 @@ public class WebRTCClient {
                 Log.i(TAG, "event_joined : " + Arrays.toString(args));
                 // Method from this class
                 emitMessage(mRoomId, IOEmit.READY, null);
+
+            }).on(IOEvent.DRAWING, args -> {
+                JSONObject data = (JSONObject) args[0];
+                if (mOnWebRTCDrawingListener != null) {
+                    DrawingPoint drawingPoint = new Gson().fromJson(data.toString(), DrawingPoint.class);
+                    mOnWebRTCDrawingListener.onDrawingImage(drawingPoint);
+                }
 
             }).on(IOEvent.MESSAGE, args -> {
                 Log.i(TAG, "event_message : " + Arrays.toString(args));
@@ -596,6 +614,7 @@ public class WebRTCClient {
         try {
             message.put("os", "mobile");
             message.put("to", mRoomId);
+            message.put("from", mCallId);
             message.put("x", x);
             message.put("y", y);
         } catch (JSONException e) {
@@ -632,6 +651,7 @@ public class WebRTCClient {
         try {
             message.put("os", "mobile");
             message.put("to", roomId);
+            message.put("from", mCallId);
             message.put("ratio", ratio);
             message.put("height", height);
             message.put("width", width);
@@ -648,6 +668,7 @@ public class WebRTCClient {
         try {
             message.put("os", "mobile");
             message.put("to", roomId);
+            message.put("from", mCallId);
             message.put("type", type);
             message.put("payload", payload);
         } catch (JSONException e) {
@@ -790,5 +811,9 @@ public class WebRTCClient {
         void onHangUp();
         void onCameraSwitchDone(boolean isFrontSide);
         void onCameraSwitchError(String error);
+    }
+
+    public interface OnWebRTCDrawingListener {
+        void onDrawingImage(DrawingPoint drawingPoint);
     }
 }

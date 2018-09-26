@@ -1,13 +1,12 @@
 package com.emcsthai.mobile.webrtc
 
 import android.app.Dialog
-import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.DialogFragment
-import android.support.v7.widget.AppCompatImageView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +19,8 @@ import com.bumptech.glide.request.RequestOptions
  */
 
 class DialogViewPhoto : DialogFragment() {
+
+    private val TAG = WebRTCClient::class.java.canonicalName
 
     companion object {
 
@@ -35,9 +36,11 @@ class DialogViewPhoto : DialogFragment() {
         }
     }
 
+    private lateinit var webRTCClient: WebRTCClient
+
     private var mOnDrawingTouchListener: OnDrawingTouchListener? = null
 
-    private lateinit var imgScreen: AppCompatImageView
+    private lateinit var imgDrawingView: ImageDrawingView
     private lateinit var fabClose: FloatingActionButton
 
     private var urlPath: String = ""
@@ -48,7 +51,7 @@ class DialogViewPhoto : DialogFragment() {
         dialog?.let {
             val width = ViewGroup.LayoutParams.MATCH_PARENT
             val height = ViewGroup.LayoutParams.MATCH_PARENT
-            it.window?.let {
+            it.window?.run {
                 dialog.window.setLayout(width, height)
                 dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             }
@@ -78,17 +81,21 @@ class DialogViewPhoto : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        webRTCClient = WebRTCClient()
+        webRTCClient.setOnWebRTCDrawingListener(onWebRTCDrawingListener)
+
         // Method from this class
         bindView(view)
         // Method from this class
         setupView()
 
-        imgScreen.setOnTouchListener(onTouchListener)
+        imgDrawingView.setOnPaintTouchListener(onPaintTouchListener)
         fabClose.setOnClickListener(onClickListener)
     }
 
     private fun bindView(v: View) {
-        imgScreen = v.findViewById(R.id.imgScreen)
+        imgDrawingView = v.findViewById(R.id.imgDrawingView)
         fabClose = v.findViewById(R.id.fabClose)
     }
 
@@ -97,7 +104,7 @@ class DialogViewPhoto : DialogFragment() {
                 .load(urlPath)
                 .apply(RequestOptions()
                         .override(1500))
-                .into(imgScreen)
+                .into(imgDrawingView)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -117,17 +124,16 @@ class DialogViewPhoto : DialogFragment() {
         mOnDrawingTouchListener = onDrawingTouchListener
     }
 
-    private val onClickListener = View.OnClickListener {
-        dialog.dismiss()
+    private val onWebRTCDrawingListener = WebRTCClient.OnWebRTCDrawingListener {
+        Log.i(TAG, "point: ${it.x}, ${it.y}")
     }
 
-    private val onTouchListener = View.OnTouchListener { v, event ->
+    private val onPaintTouchListener = ImageDrawingView.OnPaintTouchListener { x, y ->
+        mOnDrawingTouchListener?.onTouch(x, y)
+    }
 
-        val pointX = event.x
-        val pointY = event.y
-        v.drawableHotspotChanged(pointX, pointY)
-        mOnDrawingTouchListener?.onTouch(pointX, pointY)
-        true
+    private val onClickListener = View.OnClickListener {
+        dialog.dismiss()
     }
 
     interface OnDrawingTouchListener {

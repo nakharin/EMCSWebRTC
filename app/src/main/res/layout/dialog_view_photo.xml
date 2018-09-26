@@ -6,11 +6,11 @@
     android:layout_height="match_parent"
     android:background="@color/colorBlack">
 
-    <android.support.v7.widget.AppCompatImageView
-        android:id="@+id/imgScreen"
+    <com.emcsthai.mobile.webrtc.ImageDrawingView
+        android:id="@+id/imgDrawingView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitXY"/>
+        android:scaleType="fitXY" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabClose"
@@ -20,7 +20,7 @@
         android:layout_alignParentTop="true"
         android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
-        app:fabCustomSize="24dp"
+        app:fabCustomSize="30dp"
         android:src="@drawable/ic_close_white_24dp"
         tools:ignore="RelativeOverlap" />
 
