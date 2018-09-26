@@ -6,11 +6,11 @@
     android:layout_height="match_parent"
     android:background="@color/colorBlack">
 
-    <com.emcsthai.mobile.webrtc.TouchImageView
-        android:id="@+id/imgTouch"
+    <android.support.v7.widget.AppCompatImageView
+        android:id="@+id/imgScreen"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="center" />
+        android:scaleType="fitXY"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabClose"

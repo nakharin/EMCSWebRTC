@@ -1,11 +1,13 @@
 package com.emcsthai.mobile.webrtc
 
 import android.app.Dialog
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.DialogFragment
+import android.support.v7.widget.AppCompatImageView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,7 +35,9 @@ class DialogViewPhoto : DialogFragment() {
         }
     }
 
-    private lateinit var imgTouch: TouchImageView
+    private var mOnDrawingTouchListener: OnDrawingTouchListener? = null
+
+    private lateinit var imgScreen: AppCompatImageView
     private lateinit var fabClose: FloatingActionButton
 
     private var urlPath: String = ""
@@ -79,13 +83,12 @@ class DialogViewPhoto : DialogFragment() {
         // Method from this class
         setupView()
 
-        fabClose.setOnClickListener {
-            dialog.dismiss()
-        }
+        imgScreen.setOnTouchListener(onTouchListener)
+        fabClose.setOnClickListener(onClickListener)
     }
 
     private fun bindView(v: View) {
-        imgTouch = v.findViewById(R.id.imgTouch)
+        imgScreen = v.findViewById(R.id.imgScreen)
         fabClose = v.findViewById(R.id.fabClose)
     }
 
@@ -93,9 +96,8 @@ class DialogViewPhoto : DialogFragment() {
         Glide.with(context!!)
                 .load(urlPath)
                 .apply(RequestOptions()
-                        .override(1000)
-                        .centerCrop())
-                .into(imgTouch)
+                        .override(1500))
+                .into(imgScreen)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -109,5 +111,26 @@ class DialogViewPhoto : DialogFragment() {
 
     private fun restoreArguments(bundle: Bundle) {
         urlPath = bundle.getString(URL_PATH)
+    }
+
+    fun setOnDrawingTouchListener(onDrawingTouchListener: OnDrawingTouchListener) {
+        mOnDrawingTouchListener = onDrawingTouchListener
+    }
+
+    private val onClickListener = View.OnClickListener {
+        dialog.dismiss()
+    }
+
+    private val onTouchListener = View.OnTouchListener { v, event ->
+
+        val pointX = event.x
+        val pointY = event.y
+        v.drawableHotspotChanged(pointX, pointY)
+        mOnDrawingTouchListener?.onTouch(pointX, pointY)
+        true
+    }
+
+    interface OnDrawingTouchListener {
+        fun onTouch(x: Float, y: Float)
     }
 }

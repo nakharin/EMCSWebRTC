@@ -365,8 +365,9 @@ public class VideoCallActivity extends AppCompatActivity {
         public void onReceiveImage(ImageCapture imageCapture) {
             runOnUiThread(() -> {
                 try {
-                    DialogViewPhoto.Companion.newInstance(imageCapture.getData(), false)
-                            .show(getSupportFragmentManager(), "dialog");
+                    DialogViewPhoto dialog = DialogViewPhoto.Companion.newInstance(imageCapture.getData(), false);
+                    dialog.setOnDrawingTouchListener(onDrawingTouchListener);
+                    dialog.show(getSupportFragmentManager(), "dialog");
                 } catch (IllegalStateException e) {
                     e.printStackTrace();
                 }
@@ -391,6 +392,13 @@ public class VideoCallActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 Toast.makeText(VideoCallActivity.this, "onCameraSwitchError: " + error, Toast.LENGTH_SHORT).show();
             });
+        }
+    };
+
+    private final DialogViewPhoto.OnDrawingTouchListener onDrawingTouchListener = new DialogViewPhoto.OnDrawingTouchListener() {
+        @Override
+        public void onTouch(float x, float y) {
+            webRTCClient.emitDrawing(x, y);
         }
     };
 }

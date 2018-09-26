@@ -100,6 +100,7 @@ public class WebRTCClient {
         static final String JOIN = "join";
         static final String SCREEN = "screen";
         static final String MESSAGE = "message";
+        static final String DRAWING = "drawing";
     }
 
     private class IOEvent {
@@ -587,6 +588,22 @@ public class WebRTCClient {
     private void emitJoin(String roomName) {
         mSocket.emit(IOEmit.JOIN, roomName);
         Log.d(TAG, "emit_join : " + roomName);
+    }
+
+    public void emitDrawing(float x, float y) {
+
+        JSONObject message = new JSONObject();
+        try {
+            message.put("os", "mobile");
+            message.put("to", mRoomId);
+            message.put("x", x);
+            message.put("y", y);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        mSocket.emit(IOEmit.DRAWING, message);
+        Log.d(TAG, "emit_drawing : " + message);
     }
 
     private int gcd(int p, int q) {
