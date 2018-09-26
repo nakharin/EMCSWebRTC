@@ -9,7 +9,10 @@ import android.graphics.Path;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
+
+import com.emcsthai.mobile.webrtc.model.DrawingPoint;
 
 public class ImageDrawingView extends AppCompatImageView {
 
@@ -17,15 +20,27 @@ public class ImageDrawingView extends AppCompatImageView {
     public int height;
 
     private Bitmap mBitmap;
-
     private Canvas mCanvas;
 
     private Paint mBitmapPaint;
     private Paint circlePaint;
     private Paint mPaint;
 
-    private Path mPath;
     private Path circlePath;
+    private Path mPath;
+
+    /**********/
+
+    private Bitmap mBitmap2;
+    private Canvas mCanvas2;
+
+    private Paint mBitmapPaint2;
+    private Paint circlePaint2;
+    private Paint mPaint2;
+
+    private Path circlePath2;
+    private Path mPath2;
+
 
     private OnPaintTouchListener mOnPaintTouchListener = null;
 
@@ -63,6 +78,27 @@ public class ImageDrawingView extends AppCompatImageView {
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeCap(Paint.Cap.ROUND);
         mPaint.setStrokeWidth(10);
+
+        /********/
+
+        mPath2 = new Path();
+        mBitmapPaint2 = new Paint(Paint.DITHER_FLAG);
+        circlePaint2 = new Paint();
+        circlePath2 = new Path();
+        circlePaint2.setAntiAlias(true);
+        circlePaint2.setColor(Color.BLUE);
+        circlePaint2.setStyle(Paint.Style.STROKE);
+        circlePaint2.setStrokeJoin(Paint.Join.MITER);
+        circlePaint2.setStrokeWidth(4f);
+
+        mPaint2 = new Paint();
+        mPaint2.setAntiAlias(true);
+        mPaint2.setDither(true);
+        mPaint2.setColor(Color.RED);
+        mPaint2.setStyle(Paint.Style.STROKE);
+        mPaint2.setStrokeJoin(Paint.Join.ROUND);
+        mPaint2.setStrokeCap(Paint.Cap.ROUND);
+        mPaint2.setStrokeWidth(10);
     }
 
     public void setOnPaintTouchListener(OnPaintTouchListener onPaintTouchListener) {
@@ -74,6 +110,9 @@ public class ImageDrawingView extends AppCompatImageView {
         super.onSizeChanged(w, h, oldw, oldh);
         mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mBitmap);
+
+        mBitmap2 = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        mCanvas2 = new Canvas(mBitmap2);
     }
 
     @Override
@@ -83,10 +122,37 @@ public class ImageDrawingView extends AppCompatImageView {
         canvas.drawBitmap(mBitmap, 0, 0, mBitmapPaint);
         canvas.drawPath(mPath, mPaint);
         canvas.drawPath(circlePath, circlePaint);
+
+        canvas.drawBitmap(mBitmap2, 0, 0, mBitmapPaint2);
+        canvas.drawPath(mPath2, mPaint2);
+        canvas.drawPath(circlePath2, circlePaint2);
     }
 
     private float mX, mY;
+
+    private float mX2 = 0, mY2 = 0;
+
     private static final float TOUCH_TOLERANCE = 4;
+
+
+
+    public void drawFromServer(DrawingPoint drawingPoint) {
+
+        float x = drawingPoint.getX0() * 1080;
+        float y = drawingPoint.getY0() * 1920;
+
+        Log.i("555", x + ", " + y);
+
+//        float dx = Math.abs(x - mX2);
+//        float dy = Math.abs(y - mY2);
+//        if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
+//            mPath2.quadTo(mX2, mY2, (x + mX2) / 2, (y + mY2) / 2);
+//            mX2 = x;
+//            mY2 = y;
+//        }
+//
+//        invalidate();
+    }
 
     private void touch_start(float x, float y) {
         mPath.reset();
@@ -125,30 +191,37 @@ public class ImageDrawingView extends AppCompatImageView {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 touch_start(x, y);
+
                 if (mOnPaintTouchListener != null) {
-                    mOnPaintTouchListener.onPaintTouch(x/ 1280, y / 720);
+                    mOnPaintTouchListener.onPaintTouch(mX / 1080, mY / 1920, mX / 1080, mY / 1920);
                 }
                 invalidate();
-                break;
+                return true;
+
             case MotionEvent.ACTION_MOVE:
-                touch_move(x, y);
                 if (mOnPaintTouchListener != null) {
-                    mOnPaintTouchListener.onPaintTouch(x/ 1280, y / 720);
+                    mOnPaintTouchListener.onPaintTouch(mX / 1080, mY / 1920, x / 1080, y / 1920);
                 }
+
+                touch_move(x, y);
                 invalidate();
-                break;
+                return true;
+
             case MotionEvent.ACTION_UP:
                 touch_up();
+
                 if (mOnPaintTouchListener != null) {
-                    mOnPaintTouchListener.onPaintTouch(x/ 1280, y / 720);
+                    mOnPaintTouchListener.onPaintTouch(mX / 1080, mY / 1920, mX / 1080, mY / 1920);
                 }
+
                 invalidate();
-                break;
+                return true;
         }
-        return true;
+
+        return super.onTouchEvent(event);
     }
 
     interface OnPaintTouchListener {
-        void onPaintTouch(float x, float y);
+        void onPaintTouch(float startX, float startY, float moveX, float moveY);
     }
 }

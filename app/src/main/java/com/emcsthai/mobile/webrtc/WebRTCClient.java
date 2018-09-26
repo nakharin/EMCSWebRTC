@@ -74,7 +74,6 @@ public class WebRTCClient {
     private EglBase mEglBase;
 
     private OnWebRTCClientListener mOnWebRTCClientListener;
-    private OnWebRTCDrawingListener mOnWebRTCDrawingListener;
 
     private AudioManager mAudioManager;
 
@@ -117,10 +116,6 @@ public class WebRTCClient {
         static final String DISCONNECT = "disconnect";
     }
 
-    public WebRTCClient() {
-
-    }
-
     public WebRTCClient(Context context, String roomId, EglBase eglBase, OnWebRTCClientListener onWebRTCClientListener) {
         mContext = context;
         mRoomId = roomId;
@@ -139,10 +134,6 @@ public class WebRTCClient {
         startStreamingVideo();
         // Method from this class
         initSocket();
-    }
-
-    public void setOnWebRTCDrawingListener(OnWebRTCDrawingListener onWebRTCDrawingListener) {
-        mOnWebRTCDrawingListener = onWebRTCDrawingListener;
     }
 
     public PeerConnectionFactory getPeerConnectionFactory() {
@@ -294,13 +285,6 @@ public class WebRTCClient {
                 // Method from this class
                 emitMessage(mRoomId, IOEmit.READY, null);
 
-            }).on(IOEvent.DRAWING, args -> {
-                JSONObject data = (JSONObject) args[0];
-                if (mOnWebRTCDrawingListener != null) {
-                    DrawingPoint drawingPoint = new Gson().fromJson(data.toString(), DrawingPoint.class);
-                    mOnWebRTCDrawingListener.onDrawingImage(drawingPoint);
-                }
-
             }).on(IOEvent.MESSAGE, args -> {
                 Log.i(TAG, "event_message : " + Arrays.toString(args));
                 try {
@@ -333,8 +317,17 @@ public class WebRTCClient {
                     e.printStackTrace();
                 }
 
+            }).on(IOEvent.DRAWING, args -> {
+                JSONObject data = (JSONObject) args[0];
+                Log.i(TAG, "event_drawing : " + data.toString());
+                if (mOnWebRTCClientListener != null) {
+                    DrawingPoint drawingPoint = new Gson().fromJson(data.toString(), DrawingPoint.class);
+                    mOnWebRTCClientListener.onDrawingImage(drawingPoint);
+                }
+
             }).on(IOEvent.CAPTURE, args -> {
                 JSONObject data = (JSONObject) args[0];
+                Log.i(TAG, "event_capture : " + data.toString());
                 if (mOnWebRTCClientListener != null) {
                     ImageCapture imageCapture = new Gson().fromJson(data.toString(), ImageCapture.class);
                     mOnWebRTCClientListener.onReceiveImage(imageCapture);
@@ -608,15 +601,17 @@ public class WebRTCClient {
         Log.d(TAG, "emit_join : " + roomName);
     }
 
-    public void emitDrawing(float x, float y) {
+    public void emitDrawing(float startX, float startY, float moveX, float moveY) {
 
         JSONObject message = new JSONObject();
         try {
             message.put("os", "mobile");
             message.put("to", mRoomId);
             message.put("from", mCallId);
-            message.put("x", x);
-            message.put("y", y);
+            message.put("x0", startX);
+            message.put("y0", startY);
+            message.put("x1", moveX);
+            message.put("y1", moveY);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -811,9 +806,6 @@ public class WebRTCClient {
         void onHangUp();
         void onCameraSwitchDone(boolean isFrontSide);
         void onCameraSwitchError(String error);
-    }
-
-    public interface OnWebRTCDrawingListener {
         void onDrawingImage(DrawingPoint drawingPoint);
     }
 }

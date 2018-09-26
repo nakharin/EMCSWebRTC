@@ -6,12 +6,12 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.DialogFragment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.emcsthai.mobile.webrtc.model.DrawingPoint
 
 
 /**
@@ -20,7 +20,7 @@ import com.bumptech.glide.request.RequestOptions
 
 class DialogViewPhoto : DialogFragment() {
 
-    private val TAG = WebRTCClient::class.java.canonicalName
+    private val TAG = DialogViewPhoto::class.java.canonicalName
 
     companion object {
 
@@ -35,8 +35,6 @@ class DialogViewPhoto : DialogFragment() {
             return fragment
         }
     }
-
-    private lateinit var webRTCClient: WebRTCClient
 
     private var mOnDrawingTouchListener: OnDrawingTouchListener? = null
 
@@ -82,9 +80,6 @@ class DialogViewPhoto : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        webRTCClient = WebRTCClient()
-        webRTCClient.setOnWebRTCDrawingListener(onWebRTCDrawingListener)
-
         // Method from this class
         bindView(view)
         // Method from this class
@@ -107,6 +102,11 @@ class DialogViewPhoto : DialogFragment() {
                 .into(imgDrawingView)
     }
 
+
+    fun setDrawingPoint(drawingPoint: DrawingPoint) {
+        imgDrawingView.drawFromServer(drawingPoint)
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(URL_PATH, urlPath)
@@ -124,12 +124,8 @@ class DialogViewPhoto : DialogFragment() {
         mOnDrawingTouchListener = onDrawingTouchListener
     }
 
-    private val onWebRTCDrawingListener = WebRTCClient.OnWebRTCDrawingListener {
-        Log.i(TAG, "point: ${it.x}, ${it.y}")
-    }
-
-    private val onPaintTouchListener = ImageDrawingView.OnPaintTouchListener { x, y ->
-        mOnDrawingTouchListener?.onTouch(x, y)
+    private val onPaintTouchListener = ImageDrawingView.OnPaintTouchListener { startX, startY, moveX, moveY ->
+        mOnDrawingTouchListener?.onTouch(startX, startY, moveX, moveY)
     }
 
     private val onClickListener = View.OnClickListener {
@@ -137,6 +133,6 @@ class DialogViewPhoto : DialogFragment() {
     }
 
     interface OnDrawingTouchListener {
-        fun onTouch(x: Float, y: Float)
+        fun onTouch(startX: Float, startY:Float, moveX: Float, moveY: Float)
     }
 }

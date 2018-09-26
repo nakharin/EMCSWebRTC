@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.emcsthai.mobile.webrtc.model.DrawingPoint;
 import com.emcsthai.mobile.webrtc.model.ImageCapture;
 import com.irozon.alertview.AlertActionStyle;
 import com.irozon.alertview.AlertStyle;
@@ -322,10 +323,12 @@ public class VideoCallActivity extends AppCompatActivity {
 
     private final DialogViewPhoto.OnDrawingTouchListener onDrawingTouchListener = new DialogViewPhoto.OnDrawingTouchListener() {
         @Override
-        public void onTouch(float x, float y) {
-            webRTCClient.emitDrawing(x, y);
+        public void onTouch(float startX, float startY, float moveX, float moveY) {
+            webRTCClient.emitDrawing(startX, startY, moveX, moveY);
         }
     };
+
+    private DialogViewPhoto dialog = null;
 
     private final WebRTCClient.OnWebRTCClientListener onWebRTCClientListener = new WebRTCClient.OnWebRTCClientListener() {
 
@@ -372,9 +375,12 @@ public class VideoCallActivity extends AppCompatActivity {
         public void onReceiveImage(ImageCapture imageCapture) {
             runOnUiThread(() -> {
                 try {
-                    DialogViewPhoto dialog = DialogViewPhoto.Companion.newInstance(imageCapture.getData(), false);
-                    dialog.setOnDrawingTouchListener(onDrawingTouchListener);
-                    dialog.show(getSupportFragmentManager(), "dialog");
+                    if (dialog == null) {
+                        dialog = DialogViewPhoto.Companion.newInstance(imageCapture.getData(), false);
+                        dialog.setOnDrawingTouchListener(onDrawingTouchListener);
+                        dialog.show(getSupportFragmentManager(), "dialog");
+                    }
+
                 } catch (IllegalStateException e) {
                     e.printStackTrace();
                 }
@@ -399,6 +405,13 @@ public class VideoCallActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 Toast.makeText(VideoCallActivity.this, "onCameraSwitchError: " + error, Toast.LENGTH_SHORT).show();
             });
+        }
+
+        @Override
+        public void onDrawingImage(DrawingPoint drawingPoint) {
+            if (dialog != null) {
+                dialog.setDrawingPoint(drawingPoint);
+            }
         }
     };
 }
