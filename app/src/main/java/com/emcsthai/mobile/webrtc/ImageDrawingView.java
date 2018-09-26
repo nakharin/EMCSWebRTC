@@ -9,15 +9,13 @@ import android.graphics.Path;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 
 import com.emcsthai.mobile.webrtc.model.DrawingPoint;
 
 public class ImageDrawingView extends AppCompatImageView {
 
-    public int width;
-    public int height;
+    private static final String TAG = "ImageDrawingView";
 
     private Bitmap mBitmap;
     private Canvas mCanvas;
@@ -29,18 +27,10 @@ public class ImageDrawingView extends AppCompatImageView {
     private Path circlePath;
     private Path mPath;
 
-    /**********/
+    /*********************************************************************************/
 
-    private Bitmap mBitmap2;
-    private Canvas mCanvas2;
-
-    private Paint mBitmapPaint2;
-    private Paint circlePaint2;
     private Paint mPaint2;
-
-    private Path circlePath2;
     private Path mPath2;
-
 
     private OnPaintTouchListener mOnPaintTouchListener = null;
 
@@ -79,17 +69,9 @@ public class ImageDrawingView extends AppCompatImageView {
         mPaint.setStrokeCap(Paint.Cap.ROUND);
         mPaint.setStrokeWidth(10);
 
-        /********/
+        /*********************************************************************************/
 
         mPath2 = new Path();
-        mBitmapPaint2 = new Paint(Paint.DITHER_FLAG);
-        circlePaint2 = new Paint();
-        circlePath2 = new Path();
-        circlePaint2.setAntiAlias(true);
-        circlePaint2.setColor(Color.BLUE);
-        circlePaint2.setStyle(Paint.Style.STROKE);
-        circlePaint2.setStrokeJoin(Paint.Join.MITER);
-        circlePaint2.setStrokeWidth(4f);
 
         mPaint2 = new Paint();
         mPaint2.setAntiAlias(true);
@@ -110,9 +92,6 @@ public class ImageDrawingView extends AppCompatImageView {
         super.onSizeChanged(w, h, oldw, oldh);
         mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mBitmap);
-
-        mBitmap2 = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        mCanvas2 = new Canvas(mBitmap2);
     }
 
     @Override
@@ -121,47 +100,68 @@ public class ImageDrawingView extends AppCompatImageView {
 
         canvas.drawBitmap(mBitmap, 0, 0, mBitmapPaint);
         canvas.drawPath(mPath, mPaint);
-        canvas.drawPath(circlePath, circlePaint);
-
-        canvas.drawBitmap(mBitmap2, 0, 0, mBitmapPaint2);
         canvas.drawPath(mPath2, mPaint2);
-        canvas.drawPath(circlePath2, circlePaint2);
+        canvas.drawPath(circlePath, circlePaint);
     }
 
     private float mX, mY;
-
-    private float mX2 = 0, mY2 = 0;
+    private float mX2, mY2;
 
     private static final float TOUCH_TOLERANCE = 4;
 
+    public void drawFromServer(DrawingPoint dwp) {
 
+        float x = dwp.getX() * 1080;
+        float y = dwp.getY() * 1920;
 
-    public void drawFromServer(DrawingPoint drawingPoint) {
-
-        float x = drawingPoint.getX0() * 1080;
-        float y = drawingPoint.getY0() * 1920;
-
-        Log.i("555", x + ", " + y);
-
-//        float dx = Math.abs(x - mX2);
-//        float dy = Math.abs(y - mY2);
-//        if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-//            mPath2.quadTo(mX2, mY2, (x + mX2) / 2, (y + mY2) / 2);
-//            mX2 = x;
-//            mY2 = y;
-//        }
-//
-//        invalidate();
+        switch (dwp.getState()) {
+            case 0: // Action Down
+                touchStartServer(x, y);
+                break;
+            case 1: // Action Move
+                touchMoveServer(x, y);
+                break;
+            case 2: // Action Up
+                touchUpServer();
+                break;
+        }
     }
 
-    private void touch_start(float x, float y) {
+    private void touchStartServer(float x, float y) {
+        mPath2.reset();
+        mPath2.moveTo(x, y);
+        mX2 = x;
+        mY2 = y;
+    }
+
+    private void touchMoveServer(float x, float y) {
+        float dx = Math.abs(x - mX2);
+        float dy = Math.abs(y - mY2);
+        if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
+            mPath2.quadTo(mX2, mY2, (x + mX2) / 2, (y + mY2) / 2);
+            mX2 = x;
+            mY2 = y;
+        }
+    }
+
+    private void touchUpServer() {
+        mPath2.lineTo(mX2, mY2);
+        // commit the path to our offscreen
+        mCanvas.drawPath(mPath2, mPaint2);
+        // kill this so we don't double draw
+        mPath2.reset();
+    }
+
+    /*********************************************************************************/
+
+    private void touchStartLocal(float x, float y) {
         mPath.reset();
         mPath.moveTo(x, y);
         mX = x;
         mY = y;
     }
 
-    private void touch_move(float x, float y) {
+    private void touchMoveLocal(float x, float y) {
         float dx = Math.abs(x - mX);
         float dy = Math.abs(y - mY);
         if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
@@ -174,7 +174,7 @@ public class ImageDrawingView extends AppCompatImageView {
         }
     }
 
-    private void touch_up() {
+    private void touchUpLocal() {
         mPath.lineTo(mX, mY);
         circlePath.reset();
         // commit the path to our offscreen
@@ -190,7 +190,8 @@ public class ImageDrawingView extends AppCompatImageView {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                touch_start(x, y);
+
+                touchStartLocal(x, y);
 
                 if (mOnPaintTouchListener != null) {
                     mOnPaintTouchListener.onPaintTouch(mX / 1080, mY / 1920, mX / 1080, mY / 1920);
@@ -203,12 +204,13 @@ public class ImageDrawingView extends AppCompatImageView {
                     mOnPaintTouchListener.onPaintTouch(mX / 1080, mY / 1920, x / 1080, y / 1920);
                 }
 
-                touch_move(x, y);
+                touchMoveLocal(x, y);
                 invalidate();
                 return true;
 
             case MotionEvent.ACTION_UP:
-                touch_up();
+
+                touchUpLocal();
 
                 if (mOnPaintTouchListener != null) {
                     mOnPaintTouchListener.onPaintTouch(mX / 1080, mY / 1920, mX / 1080, mY / 1920);

@@ -105,6 +105,9 @@ class DialogViewPhoto : DialogFragment() {
 
     fun setDrawingPoint(drawingPoint: DrawingPoint) {
         imgDrawingView.drawFromServer(drawingPoint)
+        activity?.runOnUiThread {
+            imgDrawingView.invalidate()
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
