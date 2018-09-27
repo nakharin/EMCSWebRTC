@@ -17,8 +17,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.emcsthai.mobile.webrtc.model.DrawingPoint;
-import com.emcsthai.mobile.webrtc.model.ImageCapture;
+import com.emcsthai.mobile.webrtc.model.EventDrawing;
+import com.emcsthai.mobile.webrtc.model.EventCapture;
 import com.irozon.alertview.AlertActionStyle;
 import com.irozon.alertview.AlertStyle;
 import com.irozon.alertview.AlertView;
@@ -372,11 +372,11 @@ public class VideoCallActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onReceiveImage(ImageCapture imageCapture) {
+        public void onReceiveImage(EventCapture eventCapture) {
             runOnUiThread(() -> {
                 try {
                     if (dialog == null) {
-                        dialog = DialogViewPhoto.Companion.newInstance(imageCapture.getData(), false);
+                        dialog = DialogViewPhoto.Companion.newInstance(eventCapture.getData(), false);
                         dialog.setOnDrawingTouchListener(onDrawingTouchListener);
                         dialog.show(getSupportFragmentManager(), "dialog");
                     }
@@ -408,9 +408,9 @@ public class VideoCallActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onDrawingImage(DrawingPoint drawingPoint) {
+        public void onDrawingImage(EventDrawing eventDrawing) {
             if (dialog != null) {
-                dialog.setDrawingPoint(drawingPoint);
+                dialog.setDrawingPoint(eventDrawing);
             }
         }
     };

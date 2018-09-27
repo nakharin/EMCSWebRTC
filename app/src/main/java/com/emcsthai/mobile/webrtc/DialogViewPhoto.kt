@@ -11,7 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.emcsthai.mobile.webrtc.model.DrawingPoint
+import com.emcsthai.mobile.webrtc.model.EventDrawing
 
 
 /**
@@ -103,8 +103,8 @@ class DialogViewPhoto : DialogFragment() {
     }
 
 
-    fun setDrawingPoint(drawingPoint: DrawingPoint) {
-        imgDrawingView.drawFromServer(drawingPoint)
+    fun setDrawingPoint(eventDrawing: EventDrawing) {
+        imgDrawingView.drawFromServer(eventDrawing)
         activity?.runOnUiThread {
             imgDrawingView.invalidate()
         }

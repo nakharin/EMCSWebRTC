@@ -8,8 +8,8 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.emcsthai.mobile.webrtc.model.ImageCapture;
-import com.emcsthai.mobile.webrtc.model.DrawingPoint;
+import com.emcsthai.mobile.webrtc.model.EventCapture;
+import com.emcsthai.mobile.webrtc.model.EventDrawing;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
@@ -321,16 +321,16 @@ public class WebRTCClient {
                 JSONObject data = (JSONObject) args[0];
                 Log.i(TAG, "event_drawing : " + data.toString());
                 if (mOnWebRTCClientListener != null) {
-                    DrawingPoint drawingPoint = new Gson().fromJson(data.toString(), DrawingPoint.class);
-                    mOnWebRTCClientListener.onDrawingImage(drawingPoint);
+                    EventDrawing eventDrawing = new Gson().fromJson(data.toString(), EventDrawing.class);
+                    mOnWebRTCClientListener.onDrawingImage(eventDrawing);
                 }
 
             }).on(IOEvent.CAPTURE, args -> {
                 JSONObject data = (JSONObject) args[0];
                 Log.i(TAG, "event_capture : " + data.toString());
                 if (mOnWebRTCClientListener != null) {
-                    ImageCapture imageCapture = new Gson().fromJson(data.toString(), ImageCapture.class);
-                    mOnWebRTCClientListener.onReceiveImage(imageCapture);
+                    EventCapture capture = new Gson().fromJson(data.toString(), EventCapture.class);
+                    mOnWebRTCClientListener.onReceiveImage(capture);
                 }
 
             }).on(IOEvent.FULL, args -> {
@@ -603,21 +603,21 @@ public class WebRTCClient {
 
     public void emitDrawing(float startX, float startY, float moveX, float moveY) {
 
-        JSONObject message = new JSONObject();
+        JSONObject obj = new JSONObject();
         try {
-            message.put("os", "mobile");
-            message.put("to", mRoomId);
-            message.put("from", mCallId);
-            message.put("x0", startX);
-            message.put("y0", startY);
-            message.put("x1", moveX);
-            message.put("y1", moveY);
+            obj.put("os", "mobile");
+            obj.put("to", mRoomId);
+            obj.put("from", mCallId);
+            obj.put("x0", startX);
+            obj.put("y0", startY);
+            obj.put("x1", moveX);
+            obj.put("y1", moveY);
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        mSocket.emit(IOEmit.DRAWING, message);
-        Log.d(TAG, "emit_drawing : " + message);
+        mSocket.emit(IOEmit.DRAWING, obj);
+        Log.d(TAG, "emit_drawing : " + obj);
     }
 
     private int gcd(int p, int q) {
@@ -642,36 +642,36 @@ public class WebRTCClient {
 
         String ratio = getAspectRatio(width, height);
 
-        JSONObject message = new JSONObject();
+        JSONObject obj = new JSONObject();
         try {
-            message.put("os", "mobile");
-            message.put("to", roomId);
-            message.put("from", mCallId);
-            message.put("ratio", ratio);
-            message.put("height", height);
-            message.put("width", width);
+            obj.put("os", "mobile");
+            obj.put("to", roomId);
+            obj.put("from", mCallId);
+            obj.put("ratio", ratio);
+            obj.put("height", height);
+            obj.put("width", width);
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        mSocket.emit(IOEmit.SCREEN, message);
-        Log.d(TAG, "emit_screen : " + message);
+        mSocket.emit(IOEmit.SCREEN, obj);
+        Log.d(TAG, "emit_screen : " + obj);
     }
 
     private void emitMessage(String roomId, String type, JSONObject payload) {
-        JSONObject message = new JSONObject();
+        JSONObject obj = new JSONObject();
         try {
-            message.put("os", "mobile");
-            message.put("to", roomId);
-            message.put("from", mCallId);
-            message.put("type", type);
-            message.put("payload", payload);
+            obj.put("os", "mobile");
+            obj.put("to", roomId);
+            obj.put("from", mCallId);
+            obj.put("type", type);
+            obj.put("payload", payload);
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        mSocket.emit(IOEmit.MESSAGE, message);
-        Log.d(TAG, "emit_message : " + message);
+        mSocket.emit(IOEmit.MESSAGE, obj);
+        Log.d(TAG, "emit_message : " + obj);
     }
 
     /*****************************************************************************************
@@ -802,10 +802,10 @@ public class WebRTCClient {
         void onCallReady(String callId);
         void onLocalStream(MediaStream mediaStream);
         void onRemoteStream(MediaStream mediaStream);
-        void onReceiveImage(ImageCapture image);
+        void onReceiveImage(EventCapture eventCapture);
         void onHangUp();
         void onCameraSwitchDone(boolean isFrontSide);
         void onCameraSwitchError(String error);
-        void onDrawingImage(DrawingPoint drawingPoint);
+        void onDrawingImage(EventDrawing eventDrawing);
     }
 }

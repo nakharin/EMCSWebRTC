@@ -11,7 +11,7 @@ import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
-import com.emcsthai.mobile.webrtc.model.DrawingPoint;
+import com.emcsthai.mobile.webrtc.model.EventDrawing;
 
 public class ImageDrawingView extends AppCompatImageView {
 
@@ -33,6 +33,9 @@ public class ImageDrawingView extends AppCompatImageView {
     private Path mPath2;
 
     private OnPaintTouchListener mOnPaintTouchListener = null;
+
+    private int height = 0;
+    private int width = 0;
 
     public ImageDrawingView(Context context) {
         super(context);
@@ -90,7 +93,9 @@ public class ImageDrawingView extends AppCompatImageView {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        height = h;
+        width = w;
+        mBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mBitmap);
     }
 
@@ -109,10 +114,10 @@ public class ImageDrawingView extends AppCompatImageView {
 
     private static final float TOUCH_TOLERANCE = 4;
 
-    public void drawFromServer(DrawingPoint dwp) {
+    public void drawFromServer(EventDrawing dwp) {
 
-        float x = dwp.getX() * 1080;
-        float y = dwp.getY() * 1920;
+        float x = dwp.getX() * width;
+        float y = dwp.getY() * height;
 
         switch (dwp.getState()) {
             case 0: // Action Down
@@ -194,14 +199,14 @@ public class ImageDrawingView extends AppCompatImageView {
                 touchStartLocal(x, y);
 
                 if (mOnPaintTouchListener != null) {
-                    mOnPaintTouchListener.onPaintTouch(mX / 1080, mY / 1920, mX / 1080, mY / 1920);
+                    mOnPaintTouchListener.onPaintTouch(mX / width, mY / height, mX / width, mY / height);
                 }
                 invalidate();
                 return true;
 
             case MotionEvent.ACTION_MOVE:
                 if (mOnPaintTouchListener != null) {
-                    mOnPaintTouchListener.onPaintTouch(mX / 1080, mY / 1920, x / 1080, y / 1920);
+                    mOnPaintTouchListener.onPaintTouch(mX / width, mY / height, x / width, y / height);
                 }
 
                 touchMoveLocal(x, y);
@@ -213,7 +218,7 @@ public class ImageDrawingView extends AppCompatImageView {
                 touchUpLocal();
 
                 if (mOnPaintTouchListener != null) {
-                    mOnPaintTouchListener.onPaintTouch(mX / 1080, mY / 1920, mX / 1080, mY / 1920);
+                    mOnPaintTouchListener.onPaintTouch(mX / width, mY / height, mX / width, mY / height);
                 }
 
                 invalidate();

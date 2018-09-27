@@ -2,7 +2,7 @@ package com.emcsthai.mobile.webrtc.model;
 
 import com.google.gson.annotations.SerializedName;
 
-public class ImageCapture {
+public class EventCapture {
 
     @SerializedName("os")
     private String os = "";
@@ -16,35 +16,19 @@ public class ImageCapture {
     @SerializedName("data")
     private String data = "";
 
-    public String getOS() {
+    public String getOs() {
         return os;
-    }
-
-    public void setOS(String os) {
-        this.os = os;
     }
 
     public String getFrom() {
         return from;
     }
 
-    public void setFrom(String from) {
-        this.from = from;
-    }
-
     public String getTo() {
         return to;
     }
 
-    public void setTo(String to) {
-        this.to = to;
-    }
-
     public String getData() {
         return data;
-    }
-
-    public void setData(String data) {
-        this.data = data;
     }
 }
