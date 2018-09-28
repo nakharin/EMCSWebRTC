@@ -4,22 +4,27 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.transition.TransitionManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
     public final static String KEY_ROOM_ID = "KEY_ROOM_ID";
 
+    private ViewGroup transitionsContainer;
+
     private AppCompatEditText edtRoomId;
 
     private AppCompatButton btnJoin;
+
+    private TextView textError;
 
     private ProgressDialog progressDialog;
 
@@ -40,9 +45,13 @@ public class MainActivity extends AppCompatActivity {
         toolbar.setTitle("EMCSWebRTC");
         setSupportActionBar(toolbar);
 
+        transitionsContainer = findViewById(R.id.transitionsContainer);
+
         edtRoomId = findViewById(R.id.edtRoomId);
 
         btnJoin = findViewById(R.id.btnJoin);
+
+        textError = findViewById(R.id.textError);
 
         progressDialog = new ProgressDialog(MainActivity.this);
         progressDialog.setTitle("");
@@ -50,8 +59,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkJoinRoom() {
+
+        TransitionManager.beginDelayedTransition(transitionsContainer);
+
         String roomId = edtRoomId.getText().toString();
         if (!roomId.equals("")) {
+            textError.setVisibility(View.GONE);
             progressDialog.show();
             new Handler().postDelayed(() -> {
                 progressDialog.dismiss();
@@ -61,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
             }, 500);
 
         } else {
-            Toast.makeText(this, "Please Input Room ID", Toast.LENGTH_SHORT).show();
+            textError.setVisibility(View.VISIBLE);
         }
     }
 
