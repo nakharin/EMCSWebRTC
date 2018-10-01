@@ -375,11 +375,11 @@ public class VideoCallActivity extends AppCompatActivity {
         public void onReceiveImage(EventCapture eventCapture) {
             runOnUiThread(() -> {
                 try {
-                    if (dialog == null) {
+//                    if (dialog == null) {
                         dialog = DialogViewPhoto.Companion.newInstance(eventCapture.getData(), false);
                         dialog.setOnDrawingTouchListener(onDrawingTouchListener);
                         dialog.show(getSupportFragmentManager(), "dialog");
-                    }
+//                    }
 
                 } catch (IllegalStateException e) {
                     e.printStackTrace();

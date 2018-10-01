@@ -23,21 +23,27 @@ public class ImageDrawingView extends AppCompatImageView {
     private Canvas mCanvas;
 
     private Paint mBitmapPaint;
-    private Paint circlePaint;
-    private Paint mPaint;
 
-    private Path circlePath;
-    private Path mPath;
+    private Paint mLocalCirclePaint;
+    private Paint mLocalPaint;
+
+    private Path mLocalCirclePath;
+    private Path mLocalPath;
 
     /*********************************************************************************/
 
-    private Paint mPaint2;
-    private Path mPath2;
+    private Paint mServerPaint;
+    private Path mServerPath;
 
     private OnPaintTouchListener mOnPaintTouchListener = null;
 
-    private int height = 0;
-    private int width = 0;
+    private int mHeight = 0;
+    private int mWidth = 0;
+
+    private float mLocalX, mLocalY;
+    private float mServerX, mServerY;
+
+    private static final float TOUCH_TOLERANCE = 4;
 
     public ImageDrawingView(Context context) {
         super(context);
@@ -55,37 +61,41 @@ public class ImageDrawingView extends AppCompatImageView {
     }
 
     private void init() {
-        mPath = new Path();
-        mBitmapPaint = new Paint(Paint.DITHER_FLAG);
-        circlePaint = new Paint();
-        circlePath = new Path();
-        circlePaint.setAntiAlias(true);
-        circlePaint.setColor(Color.BLUE);
-        circlePaint.setStyle(Paint.Style.STROKE);
-        circlePaint.setStrokeJoin(Paint.Join.MITER);
-        circlePaint.setStrokeWidth(4f);
 
-        mPaint = new Paint();
-        mPaint.setAntiAlias(true);
-        mPaint.setDither(true);
-        mPaint.setColor(Color.GREEN);
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeJoin(Paint.Join.ROUND);
-        mPaint.setStrokeCap(Paint.Cap.ROUND);
-        mPaint.setStrokeWidth(10);
+        mBitmapPaint = new Paint(Paint.DITHER_FLAG);
+
+        mLocalCirclePath = new Path();
+
+        mLocalCirclePaint = new Paint();
+        mLocalCirclePaint.setAntiAlias(true);
+        mLocalCirclePaint.setColor(Color.BLUE);
+        mLocalCirclePaint.setStyle(Paint.Style.STROKE);
+        mLocalCirclePaint.setStrokeJoin(Paint.Join.MITER);
+        mLocalCirclePaint.setStrokeWidth(4f);
+
+        mLocalPath = new Path();
+
+        mLocalPaint = new Paint();
+        mLocalPaint.setAntiAlias(true);
+        mLocalPaint.setDither(true);
+        mLocalPaint.setColor(Color.GREEN);
+        mLocalPaint.setStyle(Paint.Style.STROKE);
+        mLocalPaint.setStrokeJoin(Paint.Join.ROUND);
+        mLocalPaint.setStrokeCap(Paint.Cap.ROUND);
+        mLocalPaint.setStrokeWidth(10);
 
         /*********************************************************************************/
 
-        mPath2 = new Path();
+        mServerPath = new Path();
 
-        mPaint2 = new Paint();
-        mPaint2.setAntiAlias(true);
-        mPaint2.setDither(true);
-        mPaint2.setColor(Color.RED);
-        mPaint2.setStyle(Paint.Style.STROKE);
-        mPaint2.setStrokeJoin(Paint.Join.ROUND);
-        mPaint2.setStrokeCap(Paint.Cap.ROUND);
-        mPaint2.setStrokeWidth(10);
+        mServerPaint = new Paint();
+        mServerPaint.setAntiAlias(true);
+        mServerPaint.setDither(true);
+        mServerPaint.setColor(Color.RED);
+        mServerPaint.setStyle(Paint.Style.STROKE);
+        mServerPaint.setStrokeJoin(Paint.Join.ROUND);
+        mServerPaint.setStrokeCap(Paint.Cap.ROUND);
+        mServerPaint.setStrokeWidth(10);
     }
 
     public void setOnPaintTouchListener(OnPaintTouchListener onPaintTouchListener) {
@@ -95,101 +105,110 @@ public class ImageDrawingView extends AppCompatImageView {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        height = h;
-        width = w;
-        mBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        mHeight = h;
+        mWidth = w;
+        mBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mBitmap);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
         canvas.drawBitmap(mBitmap, 0, 0, mBitmapPaint);
-        canvas.drawPath(mPath, mPaint);
-        canvas.drawPath(mPath2, mPaint2);
-        canvas.drawPath(circlePath, circlePaint);
+        canvas.drawPath(mLocalPath, mLocalPaint);
+//        canvas.drawPath(mServerPath, mServerPaint);
+        canvas.drawPath(mLocalCirclePath, mLocalCirclePaint);
     }
 
-    private float mX, mY;
-    private float mX2, mY2;
+    public void setDrawingPoint(EventDrawing dwp) {
+        float x = dwp.getX() * mWidth;
+        float y = dwp.getY() * mHeight;
 
-    private static final float TOUCH_TOLERANCE = 4;
-
-    public void drawFromServer(EventDrawing dwp) {
-
-        float x = dwp.getX() * width;
-        float y = dwp.getY() * height;
-
-        switch (dwp.getState()) {
-            case 0: // Action Down
-                touchStartServer(x, y);
-                break;
-            case 1: // Action Move
-                touchMoveServer(x, y);
-                break;
-            case 2: // Action Up
-                touchUpServer();
-                break;
-        }
-
+        mCanvas.drawPoint(x, y, mServerPaint);
         postInvalidate();
+
+//        switch (dwp.getState()) {
+//            case 0: // Action Down
+//                onServerTouchDown(x, y);
+//                break;
+//            case 1: // Action Move
+//                onServerTouchMove(x, y);
+//                postInvalidate();
+//                break;
+//            case 2: // Action Up
+//                onServerTouchUp();
+//                postInvalidate();
+//                break;
+//        }
     }
 
-    private void touchStartServer(float x, float y) {
-        mPath2.reset();
-        mPath2.moveTo(x, y);
-        mX2 = x;
-        mY2 = y;
+    private void onServerTouchDown(float x, float y) {
+        mServerPath.reset();
+        mServerPath.moveTo(x, y);
+        mServerX = x;
+        mServerY = y;
     }
 
-    private void touchMoveServer(float x, float y) {
-        float dx = Math.abs(x - mX2);
-        float dy = Math.abs(y - mY2);
+    private void onServerTouchMove(float x, float y) {
+        float dx = Math.abs(x - mServerX);
+        float dy = Math.abs(y - mServerY);
         if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-            mPath2.quadTo(mX2, mY2, (x + mX2) / 2, (y + mY2) / 2);
-            mX2 = x;
-            mY2 = y;
+            mServerPath.quadTo(mServerX, mServerY, (x + mServerX) / 2, (y + mServerY) / 2);
+            mServerX = x;
+            mServerY = y;
         }
     }
 
-    private void touchUpServer() {
-        mPath2.lineTo(mX2, mY2);
+    private void onServerTouchUp() {
+        mServerPath.lineTo(mServerX, mServerY);
         // commit the path to our offscreen
-        mCanvas.drawPath(mPath2, mPaint2);
-        // kill this so we don't double draw
-        mPath2.reset();
+        mCanvas.drawPath(mServerPath, mServerPaint);
+        // kill this so we don't double setDrawingPoint
+        mServerPath.reset();
     }
 
     /*********************************************************************************/
 
-    private void touchStartLocal(float x, float y) {
-        mPath.reset();
-        mPath.moveTo(x, y);
-        mX = x;
-        mY = y;
-    }
+    private void onLocalTouchDown(float x, float y) {
+        mLocalPath.reset();
+        mLocalPath.moveTo(x, y);
+        mLocalX = x;
+        mLocalY = y;
 
-    private void touchMoveLocal(float x, float y) {
-        float dx = Math.abs(x - mX);
-        float dy = Math.abs(y - mY);
-        if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-            mPath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2);
-            mX = x;
-            mY = y;
-
-            circlePath.reset();
-            circlePath.addCircle(mX, mY, 30, Path.Direction.CW);
+        if (mOnPaintTouchListener != null) {
+            mOnPaintTouchListener.onPaintTouch(mLocalX / mWidth, mLocalY / mHeight, mLocalX / mWidth, mLocalY / mHeight);
         }
     }
 
-    private void touchUpLocal() {
-        mPath.lineTo(mX, mY);
-        circlePath.reset();
+    private void onLocalTouchMove(float x, float y) {
+
+        if (mOnPaintTouchListener != null) {
+            mOnPaintTouchListener.onPaintTouch(mLocalX / mWidth, mLocalY / mHeight, x / mWidth, y / mHeight);
+        }
+
+        float dx = Math.abs(x - mLocalX);
+        float dy = Math.abs(y - mLocalY);
+        if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
+            mLocalPath.quadTo(mLocalX, mLocalY, (x + mLocalX) / 2, (y + mLocalY) / 2);
+            mLocalX = x;
+            mLocalY = y;
+
+            mLocalCirclePath.reset();
+            mLocalCirclePath.addCircle(mLocalX, mLocalY, 30, Path.Direction.CW);
+        }
+    }
+
+    private void onLocalTouchUp() {
+        mLocalPath.lineTo(mLocalX, mLocalY);
+        mLocalCirclePath.reset();
         // commit the path to our offscreen
-        mCanvas.drawPath(mPath, mPaint);
-        // kill this so we don't double draw
-        mPath.reset();
+        mCanvas.drawPath(mLocalPath, mLocalPaint);
+        // kill this so we don't double setDrawingPoint
+        mLocalPath.reset();
+
+        if (mOnPaintTouchListener != null) {
+            mOnPaintTouchListener.onPaintTouch(mLocalX / mWidth, mLocalY / mHeight, mLocalX / mWidth, mLocalY / mHeight);
+        }
     }
 
     @Override
@@ -199,37 +218,23 @@ public class ImageDrawingView extends AppCompatImageView {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-
-                touchStartLocal(x, y);
-
-                if (mOnPaintTouchListener != null) {
-                    mOnPaintTouchListener.onPaintTouch(mX / width, mY / height, mX / width, mY / height);
-                }
-                invalidate();
-                return true;
+                // Method from this class
+                onLocalTouchDown(x, y);
+                break;
 
             case MotionEvent.ACTION_MOVE:
-                if (mOnPaintTouchListener != null) {
-                    mOnPaintTouchListener.onPaintTouch(mX / width, mY / height, x / width, y / height);
-                }
-
-                touchMoveLocal(x, y);
-                invalidate();
-                return true;
+                // Method from this class
+                onLocalTouchMove(x, y);
+                break;
 
             case MotionEvent.ACTION_UP:
-
-                touchUpLocal();
-
-                if (mOnPaintTouchListener != null) {
-                    mOnPaintTouchListener.onPaintTouch(mX / width, mY / height, mX / width, mY / height);
-                }
-
-                invalidate();
-                return true;
+                // Method from this class
+                onLocalTouchUp();
+                break;
         }
 
-        return super.onTouchEvent(event);
+        invalidate();
+        return true;
     }
 
     interface OnPaintTouchListener {
