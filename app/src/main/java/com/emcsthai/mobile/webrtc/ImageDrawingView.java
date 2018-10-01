@@ -13,6 +13,8 @@ import android.view.MotionEvent;
 
 import com.emcsthai.mobile.webrtc.model.EventDrawing;
 
+// https://stackoverflow.com/questions/16454974/how-to-draw-with-multiple-fingers-in-canvas
+
 public class ImageDrawingView extends AppCompatImageView {
 
     private static final String TAG = "ImageDrawingView";
@@ -130,6 +132,8 @@ public class ImageDrawingView extends AppCompatImageView {
                 touchUpServer();
                 break;
         }
+
+        postInvalidate();
     }
 
     private void touchStartServer(float x, float y) {
