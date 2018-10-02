@@ -101,7 +101,7 @@ public class WebRTCClient {
         static final String JOIN = "join";
         static final String SCREEN = "screen";
         static final String MESSAGE = "message";
-        static final String DRAWING = "setDrawingPoint";
+        static final String DRAWING = "drawing";
     }
 
     private class IOEvent {
@@ -110,7 +110,7 @@ public class WebRTCClient {
         static final String JOINED = "joined";
         static final String MESSAGE = "message";
         static final String CAPTURE = "capture";
-        static final String DRAWING = "setDrawingPoint";
+        static final String DRAWING = "drawing";
         static final String FULL = "full";
         static final String BYE = "bye";
         static final String DISCONNECT = "disconnect";
@@ -602,6 +602,8 @@ public class WebRTCClient {
     }
 
     public void emitDrawing(float startX, float startY, float moveX, float moveY) {
+
+        // TODO: 2/10/2018 AD emitDrawing
 
         JSONObject obj = new JSONObject();
         try {

@@ -125,14 +125,17 @@ class DialogViewPhoto : DialogFragment() {
     }
 
     private val onPaintTouchListener = ImageDrawingView.OnPaintTouchListener { startX, startY, moveX, moveY ->
-        mOnDrawingTouchListener?.onTouch(startX, startY, moveX, moveY)
+        mOnDrawingTouchListener?.onDrawingTouch(startX, startY, moveX, moveY)
     }
 
-    private val onClickListener = View.OnClickListener {
-        dialog.dismiss()
+
+    private val onClickListener = View.OnClickListener { it ->
+        if (it == fabClose) {
+            dialog.dismiss()
+        }
     }
 
     interface OnDrawingTouchListener {
-        fun onTouch(startX: Float, startY:Float, moveX: Float, moveY: Float)
+        fun onDrawingTouch(startX: Float, startY: Float, moveX: Float, moveY: Float)
     }
 }

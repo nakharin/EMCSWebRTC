@@ -62,7 +62,8 @@ public class VideoCallActivity extends AppCompatActivity {
 
     private WebRTCClient webRTCClient;
 
-    private String roomId = "";
+    private String mRoomId = "";
+    private String mCallId = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +77,7 @@ public class VideoCallActivity extends AppCompatActivity {
         initConstraintSet();
 
         if (getIntent().hasExtra(MainActivity.KEY_ROOM_ID)) {
-            roomId = getIntent().getStringExtra(MainActivity.KEY_ROOM_ID);
+            mRoomId = getIntent().getStringExtra(MainActivity.KEY_ROOM_ID);
 
             Dexter.withActivity(this)
                     .withPermissions(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
@@ -87,7 +88,7 @@ public class VideoCallActivity extends AppCompatActivity {
                                 // Method from this class
                                 initSurfaceViews();
 
-                                webRTCClient = new WebRTCClient(VideoCallActivity.this, roomId, rootEglBase, onWebRTCClientListener);
+                                webRTCClient = new WebRTCClient(VideoCallActivity.this, mRoomId, rootEglBase, onWebRTCClientListener);
                             }
 
                             if (report.isAnyPermissionPermanentlyDenied()) {
@@ -323,7 +324,7 @@ public class VideoCallActivity extends AppCompatActivity {
 
     private final DialogViewPhoto.OnDrawingTouchListener onDrawingTouchListener = new DialogViewPhoto.OnDrawingTouchListener() {
         @Override
-        public void onTouch(float startX, float startY, float moveX, float moveY) {
+        public void onDrawingTouch(float startX, float startY, float moveX, float moveY) {
             webRTCClient.emitDrawing(startX, startY, moveX, moveY);
         }
     };
@@ -334,6 +335,7 @@ public class VideoCallActivity extends AppCompatActivity {
 
         @Override
         public void onCallReady(String callId) {
+            mCallId = callId;
         }
 
         @Override
@@ -375,11 +377,16 @@ public class VideoCallActivity extends AppCompatActivity {
         public void onReceiveImage(EventCapture eventCapture) {
             runOnUiThread(() -> {
                 try {
-//                    if (dialog == null) {
+                    if (dialog == null) {
                         dialog = DialogViewPhoto.Companion.newInstance(eventCapture.getData(), false);
                         dialog.setOnDrawingTouchListener(onDrawingTouchListener);
                         dialog.show(getSupportFragmentManager(), "dialog");
-//                    }
+                    } else {
+                        dialog.dismiss();
+                        dialog = DialogViewPhoto.Companion.newInstance(eventCapture.getData(), false);
+                        dialog.setOnDrawingTouchListener(onDrawingTouchListener);
+                        dialog.show(getSupportFragmentManager(), "dialog");
+                    }
 
                 } catch (IllegalStateException e) {
                     e.printStackTrace();

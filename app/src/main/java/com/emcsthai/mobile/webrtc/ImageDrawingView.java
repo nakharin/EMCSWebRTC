@@ -107,6 +107,7 @@ public class ImageDrawingView extends AppCompatImageView {
         super.onSizeChanged(w, h, oldw, oldh);
         mHeight = h;
         mWidth = w;
+
         mBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mBitmap);
     }
@@ -116,30 +117,29 @@ public class ImageDrawingView extends AppCompatImageView {
         super.onDraw(canvas);
         canvas.drawBitmap(mBitmap, 0, 0, mBitmapPaint);
         canvas.drawPath(mLocalPath, mLocalPaint);
-//        canvas.drawPath(mServerPath, mServerPaint);
+        canvas.drawPath(mServerPath, mServerPaint);
         canvas.drawPath(mLocalCirclePath, mLocalCirclePaint);
     }
 
     public void setDrawingPoint(EventDrawing dwp) {
-        float x = dwp.getX() * mWidth;
-        float y = dwp.getY() * mHeight;
+        if (dwp.getOs().equals("web")) {
+            float x = dwp.getX() * mWidth;
+            float y = dwp.getY() * mHeight;
 
-        mCanvas.drawPoint(x, y, mServerPaint);
-        postInvalidate();
+            switch (dwp.getState()) {
+                case 0: // Action Down
+                    onServerTouchDown(x, y);
+                    break;
+                case 1: // Action Move
+                    onServerTouchMove(x, y);
+                    break;
+                case 2: // Action Up
+                    onServerTouchUp();
+                    break;
+            }
 
-//        switch (dwp.getState()) {
-//            case 0: // Action Down
-//                onServerTouchDown(x, y);
-//                break;
-//            case 1: // Action Move
-//                onServerTouchMove(x, y);
-//                postInvalidate();
-//                break;
-//            case 2: // Action Up
-//                onServerTouchUp();
-//                postInvalidate();
-//                break;
-//        }
+            postInvalidate();
+        }
     }
 
     private void onServerTouchDown(float x, float y) {
@@ -231,6 +231,8 @@ public class ImageDrawingView extends AppCompatImageView {
                 // Method from this class
                 onLocalTouchUp();
                 break;
+            default:
+                return false;
         }
 
         invalidate();
