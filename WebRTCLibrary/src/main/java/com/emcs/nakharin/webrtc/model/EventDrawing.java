@@ -1,8 +1,8 @@
-package com.emcsthai.mobile.webrtc.model;
+package com.emcs.nakharin.webrtc.model;
 
 import com.google.gson.annotations.SerializedName;
 
-public class EventCapture {
+public class EventDrawing {
 
     @SerializedName("os")
     private String os = "";
@@ -13,8 +13,14 @@ public class EventCapture {
     @SerializedName("to")
     private String to = "";
 
-    @SerializedName("data")
-    private String data = "";
+    @SerializedName("x")
+    private float x = 0.0f;
+
+    @SerializedName("y")
+    private float y = 0.0f;
+
+    @SerializedName("state")
+    private int state = 0;
 
     public String getOs() {
         return os;
@@ -28,7 +34,15 @@ public class EventCapture {
         return to;
     }
 
-    public String getData() {
-        return data;
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public int getState() {
+        return state;
     }
 }

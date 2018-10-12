@@ -1,4 +1,4 @@
-package com.emcsthai.mobile.webrtc;
+package com.emcs.nakharin.webrtc;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -8,8 +8,8 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.emcsthai.mobile.webrtc.model.EventCapture;
-import com.emcsthai.mobile.webrtc.model.EventDrawing;
+import com.emcs.nakharin.webrtc.model.EventCapture;
+import com.emcs.nakharin.webrtc.model.EventDrawing;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
@@ -238,7 +238,7 @@ public class WebRTCClient {
 
         @Override
         public X509Certificate[] getAcceptedIssuers() {
-            return new java.security.cert.X509Certificate[]{};
+            return new X509Certificate[]{};
         }
     };
 

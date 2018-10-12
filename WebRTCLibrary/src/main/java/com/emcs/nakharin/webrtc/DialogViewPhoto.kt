@@ -1,4 +1,4 @@
-package com.emcsthai.mobile.webrtc
+package com.emcs.nakharin.webrtc
 
 import android.app.Dialog
 import android.graphics.Color
@@ -11,7 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.emcsthai.mobile.webrtc.model.EventDrawing
+import com.emcs.nakharin.webrtc.model.EventDrawing
 
 
 /**

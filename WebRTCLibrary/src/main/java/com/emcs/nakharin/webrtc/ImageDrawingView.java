@@ -1,4 +1,4 @@
-package com.emcsthai.mobile.webrtc;
+package com.emcs.nakharin.webrtc;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -11,7 +11,7 @@ import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
-import com.emcsthai.mobile.webrtc.model.EventDrawing;
+import com.emcs.nakharin.webrtc.model.EventDrawing;
 
 // https://stackoverflow.com/questions/16454974/how-to-draw-with-multiple-fingers-in-canvas
 

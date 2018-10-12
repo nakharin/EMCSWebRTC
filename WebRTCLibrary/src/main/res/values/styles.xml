@@ -1,0 +1,43 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="cardViewStyle">@style/CardView</item>
+    </style>
+
+    <style name="FullScreenDialogStyle" parent="AppTheme">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowIsFloating">false</item>
+    </style>
+
+    <!-- Button -->
+
+    <style name="MyButton">
+        <item name="android:stateListAnimator">@null</item>
+        <item name="android:elevation">2dp</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <!-- Ripple Background -->
+
+    <style name="MyRippleSelectableItem">
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+        <item name="colorControlHighlight">@color/colorRipple</item>
+    </style>
+
+    <style name="MyRippleSelectableItem.Background">
+        <item name="android:theme">@style/MyRippleSelectableItem</item>
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+    </style>
+
+    <style name="MyRippleSelectableItem.Background.Borderless">
+        <item name="android:background">?android:attr/selectableItemBackgroundBorderless</item>
+    </style>
+
+</resources>

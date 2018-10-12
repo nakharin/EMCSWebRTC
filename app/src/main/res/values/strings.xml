@@ -1,6 +1,3 @@
 <resources>
     <string name="app_name">EMCSWebRTC</string>
-
-    <string name="web_rtc_url">http://10.2.2.82:3000/</string>
-
 </resources>

@@ -1,4 +1,4 @@
-package com.emcsthai.mobile.webrtc;
+package com.emcs.nakharin.webrtc;
 
 import android.Manifest;
 import android.content.Intent;
@@ -17,8 +17,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.emcsthai.mobile.webrtc.model.EventDrawing;
-import com.emcsthai.mobile.webrtc.model.EventCapture;
+import com.emcs.nakharin.webrtc.model.EventCapture;
+import com.emcs.nakharin.webrtc.model.EventDrawing;
 import com.irozon.alertview.AlertActionStyle;
 import com.irozon.alertview.AlertStyle;
 import com.irozon.alertview.AlertView;
@@ -76,8 +76,8 @@ public class VideoCallActivity extends AppCompatActivity {
 
         initConstraintSet();
 
-        if (getIntent().hasExtra(MainActivity.KEY_ROOM_ID)) {
-            mRoomId = getIntent().getStringExtra(MainActivity.KEY_ROOM_ID);
+        if (getIntent().hasExtra(Constants.KEY_ROOM_ID)) {
+            mRoomId = getIntent().getStringExtra(Constants.KEY_ROOM_ID);
 
             Dexter.withActivity(this)
                     .withPermissions(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
@@ -199,7 +199,7 @@ public class VideoCallActivity extends AppCompatActivity {
         consSetLocal.applyTo(rootLayout);
         windowType = WINDOW_TYPE.REMOTE_SMALL;
 
-        if (android.os.Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1) {
             sendViewToBack(remoteSurfaceView);
         } else {
             remoteSurfaceView.setZOrderOnTop(false);
@@ -212,7 +212,7 @@ public class VideoCallActivity extends AppCompatActivity {
         consSetRemote.applyTo(rootLayout);
         windowType = WINDOW_TYPE.SPLIT_HALF;
 
-        if (android.os.Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1) {
             sendViewToBack(localSurfaceView);
         } else {
             localSurfaceView.setZOrderOnTop(false);

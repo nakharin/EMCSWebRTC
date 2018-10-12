@@ -14,9 +14,10 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+import com.emcs.nakharin.webrtc.Constants;
+import com.emcs.nakharin.webrtc.VideoCallActivity;
 
-    public final static String KEY_ROOM_ID = "KEY_ROOM_ID";
+public class MainActivity extends AppCompatActivity {
 
     private ViewGroup transitionsContainer;
 
@@ -69,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> {
                 progressDialog.dismiss();
                 Intent intent = new Intent(getApplicationContext(), VideoCallActivity.class);
-                intent.putExtra(KEY_ROOM_ID, roomId);
+                intent.putExtra(Constants.KEY_ROOM_ID, roomId);
                 startActivity(intent);
             }, 500);
 
