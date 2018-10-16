@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/colorBlack">
 
-    <com.emcsthai.mobile.webrtc.ImageDrawingView
+    <com.emcs.nakharin.webrtc.ImageDrawingView
         android:id="@+id/imgDrawingView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
