@@ -440,18 +440,24 @@ public class WebRTCClient {
     private void initPeerConnections() {
         Log.i(TAG, "initPeerConnections");
         ArrayList<PeerConnection.IceServer> iceServers = new ArrayList<>();
-        iceServers.add(PeerConnection.IceServer.builder("stun:23.21.150.121").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
+//        iceServers.add(PeerConnection.IceServer.builder("stun:23.21.150.121").createIceServer());
+//        iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
+//
+//        iceServers.add(PeerConnection.IceServer.builder("turn:13.250.13.83:3478?transport=udp")
+//                .setUsername("YzYNCouZM1mhqhmseWk6")
+//                .setPassword("YzYNCouZM1mhqhmseWk6")
+//                .createIceServer());
 
-        iceServers.add(PeerConnection.IceServer.builder("turn:13.250.13.83:3478?transport=udp")
-                .setUsername("YzYNCouZM1mhqhmseWk6")
-                .setPassword("YzYNCouZM1mhqhmseWk6")
+//        iceServers.add(PeerConnection.IceServer.builder("turn:turn.anyfirewall.com:443?transport=tcp")
+//                .setUsername("webrtc")
+//                .setPassword("webrtc")
+//                .createIceServer());
+
+        iceServers.add(PeerConnection.IceServer.builder("turn:10.2.2.109:3478?transport=tcp")
+                .setUsername("emcsthai")
+                .setPassword("P@ssw0rd")
                 .createIceServer());
 
-        iceServers.add(PeerConnection.IceServer.builder("turn:turn.anyfirewall.com:443?transport=tcp")
-                .setUsername("webrtc")
-                .setPassword("webrtc")
-                .createIceServer());
 
         PeerConnection.RTCConfiguration rtcConfiguration = new PeerConnection.RTCConfiguration(iceServers);
 
@@ -633,11 +639,11 @@ public class WebRTCClient {
     }
 
     private String getAspectRatio(int a, int b) {
-        final int gcd = gcd(a,b);
-        if(a > b) {
-            return (a/gcd) + ":" + (b/gcd);
+        final int gcd = gcd(a, b);
+        if (a > b) {
+            return (a / gcd) + ":" + (b / gcd);
         } else {
-            return (b/gcd) + ":" + (a/gcd);
+            return (b / gcd) + ":" + (a / gcd);
         }
     }
 
@@ -693,6 +699,19 @@ public class WebRTCClient {
 
         @Override
         public void onIceConnectionChange(PeerConnection.IceConnectionState iceConnectionState) {
+
+            switch (iceConnectionState) {
+                case DISCONNECTED:
+                    Log.e(TAG, "onIceConnectionChange = DISCONNECTED");
+                    break;
+                case FAILED:
+                    Log.e(TAG, "onIceConnectionChange = FAILED");
+                    break;
+                case CLOSED:
+                    Log.e(TAG, "onIceConnectionChange = CLOSED");
+                    break;
+            }
+
             if (iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED) {
                 if (mOnWebRTCClientListener != null) {
                     mOnWebRTCClientListener.onHangUp();
@@ -807,12 +826,19 @@ public class WebRTCClient {
 
     public interface OnWebRTCClientListener {
         void onCallReady(String callId);
+
         void onLocalStream(MediaStream mediaStream);
+
         void onRemoteStream(MediaStream mediaStream);
+
         void onReceiveImage(EventCapture eventCapture);
+
         void onHangUp();
+
         void onCameraSwitchDone(boolean isFrontSide);
+
         void onCameraSwitchError(String error);
+
         void onDrawingImage(EventDrawing eventDrawing);
     }
 }
