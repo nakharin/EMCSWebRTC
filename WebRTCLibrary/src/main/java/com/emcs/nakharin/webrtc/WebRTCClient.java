@@ -60,7 +60,7 @@ public class WebRTCClient {
     private final static String TAG = WebRTCClient.class.getCanonicalName();
 
     private final static String BASE_URL = "http://vdosocket.emcsthaidev.com/";
-    private final static String PATH = "/socket/socket.io";
+//    private final static String PATH = "/socket/socket.io";
 
     private static final int VIDEO_RESOLUTION_WIDTH = 1280;
     private static final int VIDEO_RESOLUTION_HEIGHT = 720;
@@ -458,9 +458,14 @@ public class WebRTCClient {
 //                .setPassword("P@ssw0rd")
 //                .createIceServer());
 
+//        iceServers.add(PeerConnection.IceServer.builder("turn:203.150.78.92:3478?transport=tcp")
+//                .setUsername("emcswebrtc")
+//                .setPassword("@minWebRTC")
+//                .createIceServer());
+
         iceServers.add(PeerConnection.IceServer.builder("turn:203.150.78.92:3478?transport=tcp")
-                .setUsername("emcswebrtc")
-                .setPassword("@minWebRTC")
+                .setUsername("user01")
+                .setPassword("+@QcJfZz01")
                 .createIceServer());
 
 
