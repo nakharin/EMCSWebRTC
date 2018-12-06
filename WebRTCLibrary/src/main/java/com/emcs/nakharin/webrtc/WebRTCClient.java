@@ -59,9 +59,6 @@ public class WebRTCClient {
 
     private final static String TAG = WebRTCClient.class.getCanonicalName();
 
-    private final static String BASE_URL = "http://vdosocket.emcsthaidev.com/";
-//    private final static String PATH = "/socket/socket.io";
-
     private static final int VIDEO_RESOLUTION_WIDTH = 1280;
     private static final int VIDEO_RESOLUTION_HEIGHT = 720;
     private static final int FPS = 30;
@@ -259,9 +256,9 @@ public class WebRTCClient {
             IO.Options opts = new IO.Options();
             opts.callFactory = okHttpClient;
             opts.webSocketFactory = okHttpClient;
-//            opts.path = PATH;
+//            opts.path = Constants.PATH;
 
-            mSocket = IO.socket(BASE_URL, opts);
+            mSocket = IO.socket(Constants.BASE_URL, opts);
 
             mSocket.on(IOEvent.CONNECT, args -> {
                 Log.i(TAG, "event_connect = " + Arrays.toString(args));
@@ -440,6 +437,7 @@ public class WebRTCClient {
     private void initPeerConnections() {
         Log.i(TAG, "initPeerConnections");
         ArrayList<PeerConnection.IceServer> iceServers = new ArrayList<>();
+
 //        iceServers.add(PeerConnection.IceServer.builder("stun:23.21.150.121").createIceServer());
 //        iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
 //
@@ -463,9 +461,9 @@ public class WebRTCClient {
 //                .setPassword("@minWebRTC")
 //                .createIceServer());
 
-        iceServers.add(PeerConnection.IceServer.builder("turn:203.150.78.92:3478?transport=tcp")
-                .setUsername("user01")
-                .setPassword("+@QcJfZz01")
+        iceServers.add(PeerConnection.IceServer.builder(Constants.ICE_SERVER_URL)
+                .setUsername(Constants.ICE_SERVER_USERNAME)
+                .setPassword(Constants.ICE_SERVER_PASSWORD)
                 .createIceServer());
 
 
