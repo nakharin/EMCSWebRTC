@@ -2,7 +2,7 @@
 
 buildscript {
 
-    ext.kotlin_version = '1.3.10'
+    ext.kotlin_version = '1.3.21'
     ext.junit_version = '4.12'
     ext.runner_version = '1.0.2'
     ext.espresso_core = '3.0.2'
@@ -22,7 +22,7 @@ buildscript {
     ext.dexter_version = '5.0.0'
     ext.otto_version = '1.3.8'
     ext.adjustable_imageview_version = '1.0.1'
-    ext.web_rtc_version = '1.0.24616'
+    ext.web_rtc_version = '1.0.27225'
     ext.socket_io_version = '1.0.0'
     ext.alert_view_version = '1.0.1'
 
@@ -32,7 +32,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.3.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // NOTE: Do not place your application dependencies here; they belong
